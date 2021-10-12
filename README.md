@@ -156,8 +156,8 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[pub-dev-shield]: https://img.shields.io/pub/v/walletconnect?style=for-the-badge
-[pub-dev-url]: https://pub.dev/packages/walletconnect
+[pub-dev-shield]: https://img.shields.io/pub/v/walletconnect_dart?style=for-the-badge
+[pub-dev-url]: https://pub.dev/packages/walletconnect_dart
 [effective-dart-shield]: https://img.shields.io/badge/style-effective_dart-40c4ff.svg?style=for-the-badge
 [effective-dart-url]: https://github.com/tenhobi/effective_dart
 [stars-shield]: https://img.shields.io/github/stars/rootsoft/walletconnect-dart-sdk.svg?style=for-the-badge&logo=github&colorB=deeppink&label=stars

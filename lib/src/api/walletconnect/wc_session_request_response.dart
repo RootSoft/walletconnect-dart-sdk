@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:walletconnect_dart/walletconnect.dart';
+import 'package:walletconnect_dart/src/session/peer_meta.dart';
 
 part 'wc_session_request_response.g.dart';
 

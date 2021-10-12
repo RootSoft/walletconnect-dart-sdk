@@ -1,4 +1,4 @@
-import 'package:walletconnect_dart/walletconnect.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 void main() async {
   final connector = _buildApp();
