@@ -5,6 +5,7 @@ import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
 import 'package:walletconnect_dart/src/providers/wallet_connect_provider.dart';
 import 'package:walletconnect_dart/src/walletconnect.dart';
 
+/// A provider implementation to easily support the Algorand blockchain.
 class AlgorandWCProvider extends WalletConnectProvider {
   AlgorandWCProvider(WalletConnect connector) : super(connector: connector);
 
@@ -34,6 +35,7 @@ class AlgorandWCProvider extends WalletConnectProvider {
     return result.map((tx) => Uint8List.fromList(List<int>.from(tx))).toList();
   }
 
+  /// The chain id of the Algorand blockchain.
   @override
   int get chainId => 4160;
 }

@@ -1,10 +1,8 @@
+/// Information regarding the current session.
 class SessionStatus {
   final int chainId;
-
   final List<String> accounts;
-
   final int? networkId;
-
   final String? rpcUrl;
 
   SessionStatus({

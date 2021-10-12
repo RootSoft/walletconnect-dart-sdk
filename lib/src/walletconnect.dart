@@ -35,6 +35,12 @@ typedef OnSessionUpdate = void Function(WCSessionUpdateResponse response);
 typedef OnDisconnect = void Function();
 typedef OnDisplayUriCallback = void Function(String uri);
 
+/// WalletConnect is an open source protocol for connecting decentralised
+/// applications to mobile wallets with QR code scanning or deep linking.
+///
+/// A user can interact securely with any Dapp from their mobile phone,
+/// making WalletConnect wallets a safer choice compared to desktop or
+/// browser extension wallets.
 class WalletConnect {
   /// The wallet connect protocol
   static const protocol = 'wc';
@@ -45,14 +51,19 @@ class WalletConnect {
   /// The current active session.
   final WalletConnectSession session;
 
+  /// The storage when sessions can be stored and retrieved.
   final SessionStorage? sessionStorage;
 
+  /// Default signing methods (for Ethereum)
   final List<String> signingMethods;
 
+  /// The socket transport layer
   SocketTransport transport;
 
+  /// The algorithm used to encrypt/decrypt payloads
   CipherBox cipherBox;
 
+  /// The provider used to facilitate signing
   WalletConnectProvider? provider;
 
   /// The map of request ids to pending requests.
@@ -80,6 +91,10 @@ class WalletConnect {
     }
   }
 
+  /// WalletConnect is an open source protocol for connecting decentralised
+  /// applications to mobile wallets with QR code scanning or deep linking.
+  ///
+  /// You should provide a bridge, uri or session object.
   factory WalletConnect({
     String bridge = '',
     String uri = '',
@@ -385,6 +400,7 @@ class WalletConnect {
     );
   }
 
+  /// Check if the request is a silent payload.
   bool isSilentPayload(JsonRpcRequest request) {
     if (request.method.startsWith('wc_')) {
       return true;
@@ -397,6 +413,7 @@ class WalletConnect {
     return true;
   }
 
+  /// Get a new random, payload id.
   int get payloadId {
     var rng = Random();
     final date = (DateTime.now().millisecondsSinceEpoch * pow(10, 3)).toInt();
@@ -432,6 +449,7 @@ class WalletConnect {
     });
   }
 
+  /// Register callback listeners.
   void registerListeners({
     OnConnectRequest? onConnect,
     OnSessionUpdate? onSessionUpdate,

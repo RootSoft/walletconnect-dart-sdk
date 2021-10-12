@@ -7,6 +7,8 @@ import 'package:walletconnect_dart/src/crypto/cipher_box.dart';
 import 'package:walletconnect_dart/src/crypto/encrypted_payload.dart';
 import 'package:walletconnect_dart/src/exceptions/wallet_connect_exception.dart';
 
+/// WalletConnect protocol implementation of the encryption/decryption
+/// algorithms
 class WalletConnectCipher implements CipherBox {
   /// Encrypt the data with the given key, and an optional nonce.
   @override
@@ -38,6 +40,8 @@ class WalletConnectCipher implements CipherBox {
     );
   }
 
+  /// Decrypt the payload with the given key.
+  /// This also verifies the hmac.
   @override
   Future<Uint8List> decrypt({
     required EncryptedPayload payload,
@@ -60,6 +64,7 @@ class WalletConnectCipher implements CipherBox {
     return Uint8List.fromList(data);
   }
 
+  /// Verify the hmac and returns true if valid.
   @override
   Future<bool> verifyHmac({
     required EncryptedPayload payload,
@@ -76,6 +81,7 @@ class WalletConnectCipher implements CipherBox {
     return hex.encode(chmac.bytes) == payload.hmac;
   }
 
+  /// Generate a new random, cryptographically secure key.
   @override
   Future<Uint8List> generateKey({int length = 32, Random? random}) async {
     var r = random ?? Random.secure();

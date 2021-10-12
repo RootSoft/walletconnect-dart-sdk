@@ -4,6 +4,7 @@ import 'package:walletconnect_dart/src/session/session_status.dart';
 
 part 'wc_session_request_response.g.dart';
 
+/// A response containing session information.
 @JsonSerializable()
 class WCSessionRequestResponse {
   @JsonKey(name: 'approved', defaultValue: false)

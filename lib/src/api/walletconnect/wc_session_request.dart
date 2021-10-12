@@ -3,6 +3,8 @@ import 'package:walletconnect_dart/src/session/peer_meta.dart';
 
 part 'wc_session_request.g.dart';
 
+/// A request sent from the dApp to the wallet containing information about the
+/// peer and blockchain.
 @JsonSerializable()
 class WCSessionRequest {
   @JsonKey(name: 'chainId')

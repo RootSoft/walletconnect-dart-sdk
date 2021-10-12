@@ -2,7 +2,6 @@
 <img src="https://eidoohelp.zendesk.com/hc/article_attachments/360071262952/mceclip0.png">
 </p>
 
-# walletconnect-dart-sdk
 [![pub.dev][pub-dev-shield]][pub-dev-url]
 [![Effective Dart][effective-dart-shield]][effective-dart-url]
 [![Stars][stars-shield]][stars-url]

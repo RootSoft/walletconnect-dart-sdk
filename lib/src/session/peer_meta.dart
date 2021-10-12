@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'peer_meta.g.dart';
 
+/// Meta data information.
 @JsonSerializable()
 class PeerMeta {
   final String? url;

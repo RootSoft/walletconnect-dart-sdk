@@ -20,6 +20,7 @@ class SocketTransport {
 
   bool _connected = false;
 
+  /// The transport layer used to perform JSON-RPC 2 requests.
   SocketTransport({
     required this.protocol,
     required this.version,
@@ -27,6 +28,7 @@ class SocketTransport {
     required this.subscriptions,
   }) : _eventBus = EventBus();
 
+  /// Open a new connection to a web socket server.
   void open() {
     // Connect the channel
     final wsUrl = getWebSocketUrl(
@@ -53,6 +55,8 @@ class SocketTransport {
     await channel?.sink.close();
   }
 
+  /// Send a given payload to the server.
+  /// The payload is json-encoded before sending.
   void send({
     required Map<String, dynamic> payload,
     required String topic,
@@ -69,6 +73,7 @@ class SocketTransport {
     channel?.sink.add(message);
   }
 
+  /// Subscribe to a given topic.
   void subscribe({required String topic, bool silent = false}) {
     final data = {
       'topic': topic,
@@ -81,6 +86,7 @@ class SocketTransport {
     channel?.sink.add(message);
   }
 
+  /// Listen to events.
   void on<T>(String eventName, OnEvent<T> callback) {
     _eventBus
         .on<Event<T>>()
@@ -101,6 +107,7 @@ class SocketTransport {
     _eventBus.fire(Event<WebSocketMessage>('message', message));
   }
 
+  /// Get the websocket url based on a given url.
   String getWebSocketUrl({
     required String url,
     required String protocol,
