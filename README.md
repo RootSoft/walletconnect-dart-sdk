@@ -74,6 +74,7 @@ if (!connector.connected) {
         onDisplayUri: (uri) => print(uri),
     );
 }
+```
 
 **Sign transaction**
 
