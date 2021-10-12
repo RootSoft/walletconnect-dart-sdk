@@ -15,39 +15,123 @@ phone, making WalletConnect wallets a safer choice compared to desktop or browse
 
 ## Introduction
 WalletConnect connects mobile & web applications to supported mobile wallets. The WalletConnect session is started by scanning a QR code (desktop) or by clicking an application deep link (mobile).
-walletconnect-dart-sdk is a community SDK and port of the official WalletConnect-monorepo.
 
-WalletConnect lets you build:
+WalletConnect-Dart-SDK is a community SDK and port of the official WalletConnect-monorepo.
+
+> :warning: At the moment, only [Algorand](https://www.algorand.com/) is supported!
+
+**WalletConnect lets you build:**
 - Decentralized web applications and display QR codes with [qr_flutter](https://pub.dev/packages/qr_flutter)
 - Mobile dApps with deep linking using [url_launcher](https://pub.dev/packages/url_launcher)
 - Cross-platform wallets
-
-> :warning: At the moment, only the [Algorand](https://www.algorand.com/) blockchain is supported!
 
 Once installed, you can simply connect your application to a wallet.
 
 ```dart
 // Create a connector
 final connector = WalletConnect(
-bridge: 'https://bridge.walletconnect.org',
-clientMeta: PeerMeta(
-  name: 'WalletConnect',
-  description: 'WalletConnect Developer App',
-  url: 'https://walletconnect.org',
-  icons: [
-    'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
-  ],
-),
+    bridge: 'https://bridge.walletconnect.org',
+    clientMeta: PeerMeta(
+      name: 'WalletConnect',
+      description: 'WalletConnect Developer App',
+      url: 'https://walletconnect.org',
+      icons: [
+        'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+      ],
+    ),
+);
+```
+
+## Usage
+
+### Dapps
+
+**Initiate connection**
+
+```dart
+// Create a connector
+final connector = WalletConnect(
+    bridge: 'https://bridge.walletconnect.org',
+    clientMeta: PeerMeta(
+      name: 'WalletConnect',
+      description: 'WalletConnect Developer App',
+      url: 'https://walletconnect.org',
+      icons: [
+        'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+      ],
+    ),
 );
 
-// Set a default WalletConnect provider
-connector.setDefaultProvider(AlgorandWCProvider(connector));
+// Subscribe to events
+connector.on('connect', (session) => print(session));
+connector.on('session_update', (payload) => print(payload));
+connector.on('disconnect', (session) => print(session));
 
 // Create a new session
-final session = await connector.createSession(
-    chainId: 4160,
-    onDisplayUri: (uri) => print(uri),
+if (!connector.connected) {
+    final session = await connector.createSession(
+        chainId: 4160,
+        onDisplayUri: (uri) => print(uri),
+    );
+}
+
+**Sign transaction**
+
+```dart
+// Set a default walletconnect provider
+connector.setDefaultProvider(AlgorandWCProvider(connector));
+
+// Sign the transaction
+final txBytes = Encoder.encodeMessagePack(transaction.toMessagePack());
+final signedBytes = await connector.signTransaction(
+    txBytes,
+    params: {
+      'message': 'Optional description message',
+    },
 );
+```
+
+### Wallets
+
+**Initiate connection**
+
+```dart
+// Create a connector
+final connector = WalletConnect(
+    uri: 'wc:8a5e5bdc-a0e4-47...TJRNmhWJmoxdFo6UDk2WlhaOyQ5N0U=',
+    clientMeta: PeerMeta(
+      name: 'WalletConnect',
+      description: 'WalletConnect Developer App',
+      url: 'https://walletconnect.org',
+      icons: [
+        'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+      ],
+    ),
+);
+
+// Subscribe to events
+connector.on('connect', (session) => print(session));
+connector.on('session_request', (payload) => print(payload));
+connector.on('disconnect', (session) => print(session));
+```
+
+**Manage connection**
+
+```dart
+// Approve session
+await connector.approveSession(chainId: 4160, accounts: ['0x4292...931B3']);
+
+// Reject session
+await connector.rejectSession(message: 'Optional error message');
+
+// Update session
+await connector.updateSession(SessionStatus(chainId: 4000, accounts: ['0x4292...931B3']));
+```
+
+**Kill session**
+
+```dart
+await connector.killSession();
 ```
 
 ## Changelog
