@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:walletconnect/src/crypto/encrypted_payload.dart';
+import 'package:walletconnect_dart/src/crypto/encrypted_payload.dart';
 
 abstract class CipherBox {
   Future<EncryptedPayload> encrypt({

@@ -1,4 +1,4 @@
-name: walletconnect
+name: walletconnect_dart
 description: Open protocol for connecting decentralised applications to mobile wallets with QR code scanning or deep linking.
 version: 0.0.1
 homepage: https://walletconnect.org/

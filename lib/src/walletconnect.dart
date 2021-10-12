@@ -5,18 +5,18 @@ import 'dart:typed_data';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:uuid/uuid.dart';
-import 'package:walletconnect/src/api/api.dart';
-import 'package:walletconnect/src/crypto/cipher_box.dart';
-import 'package:walletconnect/src/crypto/crypto.dart';
-import 'package:walletconnect/src/crypto/encrypted_payload.dart';
-import 'package:walletconnect/src/exceptions/exceptions.dart';
-import 'package:walletconnect/src/network/network.dart';
-import 'package:walletconnect/src/providers/providers.dart';
-import 'package:walletconnect/src/providers/wallet_connect_provider.dart';
-import 'package:walletconnect/src/session/session.dart';
-import 'package:walletconnect/src/utils/bridge_utils.dart';
-import 'package:walletconnect/src/utils/event.dart';
-import 'package:walletconnect/src/utils/event_bus.dart';
+import 'package:walletconnect_dart/src/api/api.dart';
+import 'package:walletconnect_dart/src/crypto/cipher_box.dart';
+import 'package:walletconnect_dart/src/crypto/crypto.dart';
+import 'package:walletconnect_dart/src/crypto/encrypted_payload.dart';
+import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
+import 'package:walletconnect_dart/src/network/network.dart';
+import 'package:walletconnect_dart/src/providers/providers.dart';
+import 'package:walletconnect_dart/src/providers/wallet_connect_provider.dart';
+import 'package:walletconnect_dart/src/session/session.dart';
+import 'package:walletconnect_dart/src/utils/bridge_utils.dart';
+import 'package:walletconnect_dart/src/utils/event.dart';
+import 'package:walletconnect_dart/src/utils/event_bus.dart';
 
 const ethSigningMethods = [
   'eth_sendTransaction',

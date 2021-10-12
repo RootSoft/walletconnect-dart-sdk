@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:walletconnect/src/exceptions/exceptions.dart';
-import 'package:walletconnect/src/session/peer_meta.dart';
+import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
+import 'package:walletconnect_dart/src/session/peer_meta.dart';
 
 class WalletConnectSession {
   String protocol;

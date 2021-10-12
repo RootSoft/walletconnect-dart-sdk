@@ -322,7 +322,7 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
-  walletconnect:
+  walletconnect_dart:
     dependency: "direct main"
     description:
       path: "../.."

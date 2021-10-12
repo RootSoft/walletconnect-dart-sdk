@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:walletconnect/src/exceptions/exceptions.dart';
-import 'package:walletconnect/src/providers/wallet_connect_provider.dart';
-import 'package:walletconnect/src/walletconnect.dart';
+import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
+import 'package:walletconnect_dart/src/providers/wallet_connect_provider.dart';
+import 'package:walletconnect_dart/src/walletconnect.dart';
 
 class AlgorandWCProvider extends WalletConnectProvider {
   AlgorandWCProvider(WalletConnect connector) : super(connector: connector);

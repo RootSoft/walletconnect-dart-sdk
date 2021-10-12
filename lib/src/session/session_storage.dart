@@ -1,4 +1,4 @@
-import 'package:walletconnect/src/session/wallet_connect_session.dart';
+import 'package:walletconnect_dart/src/session/wallet_connect_session.dart';
 
 class SessionStorage {
   final String storageId;

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:walletconnect/src/api/websocket/web_socket_message.dart';
-import 'package:walletconnect/src/utils/event.dart';
-import 'package:walletconnect/src/utils/event_bus.dart';
+import 'package:walletconnect_dart/src/api/websocket/web_socket_message.dart';
+import 'package:walletconnect_dart/src/utils/event.dart';
+import 'package:walletconnect_dart/src/utils/event_bus.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// The transport layer used to perform JSON-RPC 2 requests.

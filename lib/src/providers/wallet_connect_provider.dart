@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:walletconnect/src/walletconnect.dart';
+import 'package:walletconnect_dart/src/walletconnect.dart';
 
 abstract class WalletConnectProvider {
   final WalletConnect connector;
