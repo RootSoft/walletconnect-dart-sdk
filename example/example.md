@@ -87,3 +87,15 @@ algorand.sendPayment(
     amount: Algo.toMicroAlgos(5),
 );
 ```
+
+### Algorand TestNet
+
+It's better and cheaper to carry to test when you make use of Algorand TestNet. To switch to TestNet update the `AlgodClient` to use the TestNet URL.
+
+```dart
+final algorand = Algorand(
+  algodClient: AlgodClient(apiUrl: AlgoExplorer.TESTNET_ALGOD_API_URL),
+);
+```
+
+If you need Algos on TestNet, you can use the faucet: https://bank.testnet.algorand.network/
