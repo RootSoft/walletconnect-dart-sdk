@@ -90,7 +90,7 @@ algorand.sendPayment(
 
 ### Algorand TestNet
 
-It's better and cheaper to carry to test when you make use of Algorand TestNet. To switch to TestNet update the `AlgodClient` to use the TestNet URL.
+It's better and cheaper to test on Algorand TestNet before testing on Algorand MainNet. To switch to TestNet update the `AlgodClient` to use the TestNet URL.
 
 ```dart
 final algorand = Algorand(
