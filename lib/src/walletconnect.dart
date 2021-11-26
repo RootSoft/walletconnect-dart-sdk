@@ -348,6 +348,17 @@ class WalletConnect {
         (throw WalletConnectException('No provider specified.'));
     return provider.signTransaction(transaction: transaction, params: params);
   }
+  /// Sign transactions.
+  Future<List<Uint8List>> signTransactions(
+    List<Uint8List> transactions, {
+    Map<String, dynamic> params = const {},
+    WalletConnectProvider? provider,
+  }) async {
+    provider = provider ??
+        this.provider ??
+        (throw WalletConnectException('No provider specified.'));
+    return provider.signTransactions(transactions: transactions, params: params);
+  }
 
   /// Sends a JSON-RPC-2 compliant request to invoke the given [method].
   Future _sendRequest(

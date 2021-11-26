@@ -17,6 +17,14 @@ abstract class WalletConnectProvider {
     Map<String, dynamic> params = const {},
   });
 
+  /// Signs unsigned transactions by sending a request to the wallet.
+  /// Returns the signed transactions bytes.
+  /// Throws [WalletConnectException] if unable to sign the transactions.
+  Future<List<Uint8List>> signTransactions({
+    required List<Uint8List> transactions,
+    Map<String, dynamic> params = const {},
+  });
+
   /// Get the chain id.
   int get chainId;
 }
