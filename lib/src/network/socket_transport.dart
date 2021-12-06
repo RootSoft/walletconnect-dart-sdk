@@ -45,8 +45,12 @@ class SocketTransport {
     // Listen for messages
     channel?.stream.listen(_socketReceive, onError: (error) {
       _connected = false;
+      // auto-heal by re-opening
+      this.open();
     }, onDone: () {
       _connected = false;
+      // auto-heal by re-opening
+      this.open();
     });
   }
 
