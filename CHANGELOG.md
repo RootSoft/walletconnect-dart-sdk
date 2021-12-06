@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Added support for session storage
+
 ## 0.0.4
 
 * Added examples
