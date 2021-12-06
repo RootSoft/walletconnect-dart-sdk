@@ -1,15 +1,9 @@
 import 'package:walletconnect_dart/src/session/wallet_connect_session.dart';
 
-class SessionStorage {
-  final String storageId;
+abstract class SessionStorage {
+  Future store(WalletConnectSession session);
 
-  SessionStorage({this.storageId = 'walletconnect'});
+  Future<WalletConnectSession?> getSession();
 
-  WalletConnectSession? getSession() {
-    return null;
-  }
-
-  void removeSession() {}
-
-  void store(WalletConnectSession session) {}
+  Future removeSession();
 }

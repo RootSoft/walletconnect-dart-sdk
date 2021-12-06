@@ -1,9 +1,14 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
 import 'package:walletconnect_dart/src/session/peer_meta.dart';
+import 'package:walletconnect_dart/src/utils/key_converter.dart';
 
+part 'wallet_connect_session.g.dart';
+
+@JsonSerializable()
 class WalletConnectSession {
   String protocol;
   int version;
@@ -11,6 +16,8 @@ class WalletConnectSession {
   List<String> accounts;
   int chainId;
   String bridge = '';
+
+  @KeyConverter()
   Uint8List? key;
   String clientId = '';
   PeerMeta? clientMeta;
@@ -87,4 +94,9 @@ class WalletConnectSession {
   String toUri() {
     return '$protocol:$handshakeTopic@$version?bridge=${Uri.encodeComponent(bridge)}&key=${hex.encode(key ?? [])}';
   }
+
+  factory WalletConnectSession.fromJson(Map<String, dynamic> json) =>
+      _$WalletConnectSessionFromJson(json);
+
+  Map<String, dynamic> toJson() => _$WalletConnectSessionToJson(this);
 }

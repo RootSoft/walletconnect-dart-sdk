@@ -119,9 +119,13 @@ class WalletConnect {
       session = WalletConnectSession.fromUri(uri);
     }
 
-    session = session ?? WalletConnectSession(bridge: bridge, accounts: []);
-    session.clientId = clientId ?? const Uuid().v4();
-    session.clientMeta = clientMeta ?? const PeerMeta();
+    session = session ??
+        WalletConnectSession(
+          bridge: bridge,
+          accounts: [],
+          clientId: clientId ?? const Uuid().v4(),
+          clientMeta: clientMeta ?? const PeerMeta(),
+        );
 
     cipher = cipher ?? WalletConnectCipher();
 
@@ -135,7 +139,7 @@ class WalletConnect {
 
     return WalletConnect._internal(
       session: session,
-      sessionStorage: sessionStorage ?? SessionStorage(),
+      sessionStorage: sessionStorage,
       cipherBox: cipher,
       signingMethods: [...ethSigningMethods],
       transport: transport,
@@ -198,7 +202,7 @@ class WalletConnect {
     final response = await _sendRequest(request, topic: session.handshakeTopic);
 
     // Notify listeners
-    _handleSessionResponse(response);
+    await _handleSessionResponse(response);
 
     return WCSessionRequestResponse.fromJson(response).status;
   }
@@ -292,7 +296,7 @@ class WalletConnect {
     final response = await _sendRequest(request);
 
     // Notify listeners
-    _handleSessionResponse(response);
+    await _handleSessionResponse(response);
   }
 
   /// Send a custom request.
@@ -327,9 +331,9 @@ class WalletConnect {
       ],
     );
 
-    await _sendRequest(request);
+    unawaited(_sendRequest(request));
 
-    _handleSessionDisconnect(errorMessage: message);
+    await _handleSessionDisconnect(errorMessage: message);
   }
 
   /// Set the default signing provider.
@@ -541,7 +545,7 @@ class WalletConnect {
     return true;
   }
 
-  void _handleSessionResponse(Map<String, dynamic> params) {
+  Future _handleSessionResponse(Map<String, dynamic> params) async {
     final approved = params['approved'] ?? false;
     final connected = this.connected;
     if (approved && !connected) {
@@ -549,7 +553,7 @@ class WalletConnect {
       session.approve(params);
 
       // Store session
-      sessionStorage?.store(session);
+      await sessionStorage?.store(session);
 
       // Notify the listeners
       final data = WCSessionRequestResponse.fromJson(params);
@@ -559,24 +563,24 @@ class WalletConnect {
       session.approve(params);
 
       // Store session
-      sessionStorage?.store(session);
+      await sessionStorage?.store(session);
 
       // Notify the listeners
       final data = WCSessionUpdateResponse.fromJson(params);
       _eventBus.fire(Event<WCSessionUpdateResponse>('session_update', data));
     } else {
-      _handleSessionDisconnect();
+      await _handleSessionDisconnect();
     }
   }
 
-  void _handleSessionDisconnect({String? errorMessage}) {
+  Future _handleSessionDisconnect({String? errorMessage}) async {
     session.reset();
 
     // Remove storage session
-    sessionStorage?.removeSession();
+    await sessionStorage?.removeSession();
 
     // Close the web socket connection
-    transport.close();
+    await transport.close();
 
     // Notify listeners
     _eventBus.fire(Event<Map<String, dynamic>>('disconnect', {
