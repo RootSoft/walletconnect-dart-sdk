@@ -22,7 +22,33 @@ class AlgorandWCProvider extends WalletConnectProvider {
       ...params,
     };
 
-    final requestParams = [txToSign];
+    return _signTransactions(requestParams: [txToSign]);
+  }
+
+  /// Signs unsigned transactions by sending a request to the wallet.
+  /// Returns the signed transactions bytes.
+  /// Throws [WalletConnectException] if unable to sign the transactions.
+  @override
+  Future<List<Uint8List>> signTransactions({
+    required List<Uint8List> transactions,
+    Map<String, dynamic> params = const {},
+  }) async {
+    final txsToSign = transactions
+        .map((tx) => {
+              'txn': base64Encode(tx),
+              ...params,
+            })
+        .toList();
+
+    return _signTransactions(requestParams: txsToSign);
+  }
+
+  /// Signs unsigned transactions by sending a request to the wallet.
+  /// Returns the signed transactions bytes.
+  /// Throws [WalletConnectException] if unable to sign the transactions.
+  Future<List<Uint8List>> _signTransactions({
+    required List<Map<String, dynamic>> requestParams,
+  }) async {
     final result = await connector.sendCustomRequest(
       method: 'algo_signTxn',
       params: [requestParams],

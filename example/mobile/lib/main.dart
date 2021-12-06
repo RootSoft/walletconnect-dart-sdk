@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_dapp/wallet.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
@@ -34,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final wc = WalletConnector();
 
   String txId = '';
+  String _displayUri = '';
 
   @override
   Widget build(BuildContext context) {
@@ -42,17 +44,19 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Click the button to connect with the Algorand Wallet',
-            ),
-            Text(
-              txId,
-            ),
-          ],
-        ),
+        child: _displayUri.isNotEmpty
+            ? QrImage(data: _displayUri)
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'Click the button to connect with the Algorand Wallet',
+                  ),
+                  Text(
+                    txId,
+                  ),
+                ],
+              ),
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Increment',
@@ -61,13 +65,17 @@ class _MyHomePageState extends State<MyHomePage> {
           final session = await wc.connector.createSession(
             chainId: 4160,
             onDisplayUri: (uri) {
-              launch(uri);
+              // launch(uri);
+              setState(() {
+                _displayUri = uri;
+              });
             },
           );
 
-          final txId = await wc.signTransaction(session);
+          final txId = await wc.signTransactions(session);
           setState(() {
             this.txId = txId;
+            _displayUri = '';
           });
         },
       ),

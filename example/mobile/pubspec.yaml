@@ -20,6 +20,7 @@ dependencies:
 
   # URL Launcher
   url_launcher: ^6.0.12
+  qr_flutter: ^4.0.0
 
 dev_dependencies:
   flutter_test:
