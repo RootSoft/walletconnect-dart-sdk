@@ -7,8 +7,8 @@ class WCSessionUpdateResponse {
   @JsonKey(name: 'approved', defaultValue: false)
   final bool approved;
 
-  @JsonKey(name: 'chainId', defaultValue: 0)
-  final int chainId;
+  @JsonKey(name: 'chainId', defaultValue: '0')
+  final String chainId;
 
   @JsonKey(name: 'accounts', defaultValue: [])
   final List<String> accounts;

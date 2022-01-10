@@ -39,7 +39,7 @@ connector.setDefaultProvider(AlgorandWCProvider(connector));
 
 // Check if connection is already established
 final session = await connector.createSession(
-    chainId: 4160,
+    chainId: '4160',
     onDisplayUri: (uri) => print(uri),
 );
 

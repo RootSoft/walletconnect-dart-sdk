@@ -14,7 +14,7 @@ class WalletConnectSession {
   int version;
   bool connected;
   List<String> accounts;
-  int chainId;
+  String chainId;
   String bridge = '';
 
   @KeyConverter()
@@ -33,7 +33,7 @@ class WalletConnectSession {
     this.protocol = 'wc',
     this.version = 1,
     this.connected = false,
-    this.chainId = 0,
+    this.chainId = '0',
     this.bridge = '',
     this.key,
     this.clientId = '',

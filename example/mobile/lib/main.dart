@@ -63,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
         onPressed: () async {
           final session = await wc.connector.createSession(
-            chainId: 4160,
+            chainId: '4160',
             onDisplayUri: (uri) {
               // launch(uri);
               setState(() {

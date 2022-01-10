@@ -10,7 +10,7 @@ WCSessionRequestResponse _$WCSessionRequestResponseFromJson(
         Map<String, dynamic> json) =>
     WCSessionRequestResponse(
       approved: json['approved'] as bool? ?? false,
-      chainId: json['chainId'] as int?,
+      chainId: json['chainId'] as String?,
       accounts: (json['accounts'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
