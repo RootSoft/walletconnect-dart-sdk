@@ -18,9 +18,6 @@ void main() async {
     ),
   );
 
-  // Set a default walletconnect provider
-  connector.setDefaultProvider(AlgorandWCProvider(connector));
-
   // Check if connection is already established
   final session = await connector.createSession(
     chainId: 4160,
@@ -42,12 +39,14 @@ void main() async {
 
   // Sign the transaction
   final txBytes = Encoder.encodeMessagePack(transaction.toMessagePack());
-  final signedBytes = await connector.signTransaction(
+  final signedBytes = await connector.algo?.signTransaction(
     txBytes,
     params: {
       'message': 'Optional description message',
     },
   );
+
+  if (signedBytes == null) return;
 
   // Broadcast the transaction
   final txId = await algorand.sendRawTransactions(
