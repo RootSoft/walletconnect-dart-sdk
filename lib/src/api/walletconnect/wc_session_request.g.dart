@@ -8,7 +8,7 @@ part of 'wc_session_request.dart';
 
 WCSessionRequest _$WCSessionRequestFromJson(Map<String, dynamic> json) =>
     WCSessionRequest(
-      chainId: json['chainId'] as int?,
+      chainId: json['chainId'] as String?,
       peerId: json['peerId'] as String?,
       peerMeta: json['peerMeta'] == null
           ? null

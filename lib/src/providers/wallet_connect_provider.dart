@@ -26,5 +26,5 @@ abstract class WalletConnectProvider {
   });
 
   /// Get the chain id.
-  int get chainId;
+  String get chainId;
 }

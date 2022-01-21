@@ -14,7 +14,7 @@ WalletConnectSession _$WalletConnectSessionFromJson(
       protocol: json['protocol'] as String? ?? 'wc',
       version: json['version'] as int? ?? 1,
       connected: json['connected'] as bool? ?? false,
-      chainId: json['chainId'] as int? ?? 0,
+      chainId: json['chainId'] as String? ?? '0',
       bridge: json['bridge'] as String? ?? '',
       key: const KeyConverter().fromJson(json['key'] as String?),
       clientId: json['clientId'] as String? ?? '',

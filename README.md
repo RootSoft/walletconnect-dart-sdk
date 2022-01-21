@@ -69,7 +69,7 @@ connector.on('disconnect', (session) => print(session));
 // Create a new session
 if (!connector.connected) {
     final session = await connector.createSession(
-        chainId: 4160,
+        chainId: '4160',
         onDisplayUri: (uri) => print(uri),
     );
 }
@@ -119,13 +119,13 @@ connector.on('disconnect', (session) => print(session));
 
 ```dart
 // Approve session
-await connector.approveSession(chainId: 4160, accounts: ['0x4292...931B3']);
+await connector.approveSession(chainId: '4160', accounts: ['0x4292...931B3']);
 
 // Reject session
 await connector.rejectSession(message: 'Optional error message');
 
 // Update session
-await connector.updateSession(SessionStatus(chainId: 4000, accounts: ['0x4292...931B3']));
+await connector.updateSession(SessionStatus(chainId: '4000', accounts: ['0x4292...931B3']));
 ```
 
 **Kill session**
