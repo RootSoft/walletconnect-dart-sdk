@@ -74,12 +74,12 @@ class SocketTransport {
   }
 
   /// Subscribe to a given topic.
-  void subscribe({required String topic, bool silent = false}) {
+  void subscribe({required String topic}) {
     final data = {
       'topic': topic,
       'type': 'sub',
       'payload': '',
-      'silent': silent,
+      'silent': true,
     };
 
     final message = json.encode(data);
@@ -135,7 +135,7 @@ class SocketTransport {
 
   void _queueSubscriptions() {
     for (var topic in subscriptions) {
-      subscribe(topic: topic, silent: true);
+      subscribe(topic: topic);
     }
   }
 }
