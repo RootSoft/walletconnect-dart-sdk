@@ -1,8 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:walletconnect_dart/src/providers/walletconnect_provider.dart';
-import 'package:walletconnect_dart/src/walletconnect.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 extension HexToBytes on String {
   Uint8List toUint8List() => Uint8List.fromList(hex.decode(this));
@@ -10,8 +9,11 @@ extension HexToBytes on String {
 
 /// A provider implementation to easily support the Ethereum blockchain.
 class EthereumWalletConnectProvider extends WalletConnectProvider {
-  EthereumWalletConnectProvider(WalletConnect connector)
-      : super(connector: connector);
+  final int _chainId;
+
+  EthereumWalletConnectProvider(WalletConnect connector, {int chainId = 0})
+      : _chainId = chainId,
+        super(connector: connector);
 
   /// Signs method calculates an Ethereum specific signature.
   /// [address] - 20B address
@@ -135,4 +137,7 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
 
     return result;
   }
+
+  @override
+  int get chainId => _chainId;
 }

@@ -1,7 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:algorand_dart/algorand_dart.dart' as algorand;
-import 'package:convert/convert.dart';
 import 'package:http/http.dart';
 import 'package:mobile_dapp/transaction_tester.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -12,6 +10,7 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
   WalletConnectEthereumCredentials({required this.provider});
 
   final EthereumWalletConnectProvider provider;
+
   @override
   Future<EthereumAddress> extractAddress() {
     // TODO: implement extractAddress
@@ -29,7 +28,8 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
       value: transaction.value?.getInWei,
       nonce: transaction.nonce,
     );
-    return '';
+
+    return hash;
   }
 
   @override
@@ -42,15 +42,36 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
 
 class EthereumTransactionTester extends TransactionTester {
   final Web3Client ethereum;
+  final EthereumWalletConnectProvider provider;
 
   EthereumTransactionTester._internal({
+    required WalletConnect connector,
     required this.ethereum,
-  });
+    required this.provider,
+  }) : super(connector: connector);
 
   factory EthereumTransactionTester() {
     final ethereum = Web3Client('https://ropsten.infura.io/', Client());
 
-    return EthereumTransactionTester._internal(ethereum: ethereum);
+    final connector = WalletConnect(
+      bridge: 'https://bridge.walletconnect.org',
+      clientMeta: PeerMeta(
+        name: 'WalletConnect',
+        description: 'WalletConnect Developer App',
+        url: 'https://walletconnect.org',
+        icons: [
+          'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+        ],
+      ),
+    );
+
+    final provider = EthereumWalletConnectProvider(connector);
+
+    return EthereumTransactionTester._internal(
+      connector: connector,
+      ethereum: ethereum,
+      provider: provider,
+    );
   }
 
   @override
@@ -75,8 +96,7 @@ class EthereumTransactionTester extends TransactionTester {
       value: EtherAmount.fromUnitAndValue(EtherUnit.finney, 1),
     );
 
-    final credentials =
-        WalletConnectEthereumCredentials(provider: connector.eth!);
+    final credentials = WalletConnectEthereumCredentials(provider: provider);
 
     // Sign the transaction
     final txBytes = await ethereum.sendTransaction(credentials, transaction);
@@ -84,7 +104,7 @@ class EthereumTransactionTester extends TransactionTester {
     // Kill the session
     connector.killSession();
 
-    return '';
+    return txBytes;
   }
 
   @override

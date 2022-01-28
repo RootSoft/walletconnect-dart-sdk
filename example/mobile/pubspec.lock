@@ -14,7 +14,7 @@ packages:
       name: algorand_dart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.2-beta.8"
+    version: "1.0.1"
   algorand_kmd:
     dependency: transitive
     description:
@@ -49,7 +49,7 @@ packages:
       name: base32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0"
+    version: "2.1.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -182,7 +182,7 @@ packages:
       name: dio
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.4"
   equatable:
     dependency: transitive
     description:
@@ -260,7 +260,7 @@ packages:
       name: json_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.0"
+    version: "4.4.0"
   json_rpc_2:
     dependency: transitive
     description:

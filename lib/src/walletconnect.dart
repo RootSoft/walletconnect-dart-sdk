@@ -10,7 +10,6 @@ import 'package:walletconnect_dart/src/crypto/crypto.dart';
 import 'package:walletconnect_dart/src/crypto/encrypted_payload.dart';
 import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
 import 'package:walletconnect_dart/src/network/network.dart';
-import 'package:walletconnect_dart/src/providers/providers.dart';
 import 'package:walletconnect_dart/src/session/session.dart';
 import 'package:walletconnect_dart/src/utils/bridge_utils.dart';
 import 'package:walletconnect_dart/src/utils/event.dart';
@@ -61,9 +60,6 @@ class WalletConnect {
   /// The algorithm used to encrypt/decrypt payloads
   CipherBox cipherBox;
 
-  /// The provider used to facilitate signing
-  WalletConnectProviders? providers;
-
   /// The map of request ids to pending requests.
   final _pendingRequests = <int, _Request>{};
 
@@ -77,7 +73,6 @@ class WalletConnect {
     required this.cipherBox,
     required this.transport,
   }) : _eventBus = EventBus() {
-    providers = WalletConnectProviders(connector: this);
     // Init transport event handling
     _initTransport();
 
@@ -335,10 +330,6 @@ class WalletConnect {
 
     await _handleSessionDisconnect(errorMessage: message);
   }
-
-  // Client methods access
-  AlgorandWalletConnectProvider? get algo => providers?.algo;
-  EthereumWalletConnectProvider? get eth => providers?.eth;
 
   /// Check if the request is a silent payload.
   bool isSilentPayload(JsonRpcRequest request) {

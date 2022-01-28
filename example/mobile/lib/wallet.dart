@@ -4,10 +4,12 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 class WalletConnector {
   final Algorand algorand;
   final WalletConnect connector;
+  final AlgorandWalletConnectProvider provider;
 
   const WalletConnector._internal({
     required this.algorand,
     required this.connector,
+    required this.provider,
   });
 
   factory WalletConnector() {
@@ -27,9 +29,13 @@ class WalletConnector {
       ),
     );
 
-    connector.setDefaultProvider(AlgorandWCProvider(connector));
+    final provider = AlgorandWalletConnectProvider(connector);
 
-    return WalletConnector._internal(algorand: algorand, connector: connector);
+    return WalletConnector._internal(
+      algorand: algorand,
+      connector: connector,
+      provider: provider,
+    );
   }
 
   Future<String> signTransaction(SessionStatus session) async {
@@ -39,7 +45,7 @@ class WalletConnector {
     final params = await algorand.getSuggestedTransactionParams();
 
     // Build the transaction
-    final transaction = await (PaymentTransactionBuilder()
+    final tx = await (PaymentTransactionBuilder()
           ..sender = sender
           ..noteText = 'Signed with WalletConnect'
           ..amount = Algo.toMicroAlgos(0.0001)
@@ -48,9 +54,8 @@ class WalletConnector {
         .build();
 
     // Sign the transaction
-    final txBytes = Encoder.encodeMessagePack(transaction.toMessagePack());
-    final signedBytes = await connector.signTransaction(
-      txBytes,
+    final signedBytes = await provider.signTransaction(
+      tx.toBytes(),
       params: {
         'message': 'Optional description message',
       },
@@ -75,27 +80,27 @@ class WalletConnector {
     final params = await algorand.getSuggestedTransactionParams();
 
     // Build the transaction
-    final transaction1 = await (PaymentTransactionBuilder()
+    final tx1 = await (PaymentTransactionBuilder()
           ..sender = sender
           ..noteText = 'Signed with WalletConnect - 1'
           ..amount = Algo.toMicroAlgos(0.0001)
           ..receiver = sender
           ..suggestedParams = params)
         .build();
-    final transaction2 = await (PaymentTransactionBuilder()
+
+    final tx2 = await (PaymentTransactionBuilder()
           ..sender = sender
           ..noteText = 'Signed with WalletConnect - 2'
           ..amount = Algo.toMicroAlgos(0.0002)
           ..receiver = sender
           ..suggestedParams = params)
         .build();
-    AtomicTransfer.group([transaction1, transaction2]);
+
+    AtomicTransfer.group([tx1, tx2]);
 
     // Sign the transaction
-    final tx1Bytes = Encoder.encodeMessagePack(transaction1.toMessagePack());
-    final tx2Bytes = Encoder.encodeMessagePack(transaction2.toMessagePack());
-    final signedBytes = await connector.signTransactions(
-      [tx1Bytes, tx2Bytes],
+    final signedBytes = await provider.signTransactions(
+      [tx1.toBytes(), tx2.toBytes()],
       params: {
         'message': 'Optional description message',
       },

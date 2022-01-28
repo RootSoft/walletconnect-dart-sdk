@@ -4,17 +4,38 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 class AlgorandTransactionTester extends TransactionTester {
   final Algorand algorand;
+  final AlgorandWalletConnectProvider provider;
 
   AlgorandTransactionTester._internal({
+    required WalletConnect connector,
     required this.algorand,
-  });
+    required this.provider,
+  }) : super(connector: connector);
 
   factory AlgorandTransactionTester() {
     final algorand = Algorand(
       algodClient: AlgodClient(apiUrl: AlgoExplorer.TESTNET_ALGOD_API_URL),
     );
 
-    return AlgorandTransactionTester._internal(algorand: algorand);
+    final connector = WalletConnect(
+      bridge: 'https://bridge.walletconnect.org',
+      clientMeta: PeerMeta(
+        name: 'WalletConnect',
+        description: 'WalletConnect Developer App',
+        url: 'https://walletconnect.org',
+        icons: [
+          'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+        ],
+      ),
+    );
+
+    final provider = AlgorandWalletConnectProvider(connector);
+
+    return AlgorandTransactionTester._internal(
+      connector: connector,
+      algorand: algorand,
+      provider: provider,
+    );
   }
 
   @override
@@ -35,7 +56,7 @@ class AlgorandTransactionTester extends TransactionTester {
     final params = await algorand.getSuggestedTransactionParams();
 
     // Build the transaction
-    final transaction = await (PaymentTransactionBuilder()
+    final tx = await (PaymentTransactionBuilder()
           ..sender = sender
           ..noteText = 'Signed with WalletConnect'
           ..amount = Algo.toMicroAlgos(0.0001)
@@ -44,15 +65,12 @@ class AlgorandTransactionTester extends TransactionTester {
         .build();
 
     // Sign the transaction
-    final txBytes = Encoder.encodeMessagePack(transaction.toMessagePack());
-    final signedBytes = await connector.algo?.signTransaction(
-      txBytes,
+    final signedBytes = await provider.signTransaction(
+      tx.toBytes(),
       params: {
         'message': 'Optional description message',
       },
     );
-
-    if (signedBytes == null) return '';
 
     // Broadcast the transaction
     final txId = await algorand.sendRawTransactions(
@@ -74,33 +92,31 @@ class AlgorandTransactionTester extends TransactionTester {
     final params = await algorand.getSuggestedTransactionParams();
 
     // Build the transaction
-    final transaction1 = await (PaymentTransactionBuilder()
+    final tx1 = await (PaymentTransactionBuilder()
           ..sender = sender
           ..noteText = 'Signed with WalletConnect - 1'
           ..amount = Algo.toMicroAlgos(0.0001)
           ..receiver = sender
           ..suggestedParams = params)
         .build();
-    final transaction2 = await (PaymentTransactionBuilder()
+
+    final tx2 = await (PaymentTransactionBuilder()
           ..sender = sender
           ..noteText = 'Signed with WalletConnect - 2'
           ..amount = Algo.toMicroAlgos(0.0002)
           ..receiver = sender
           ..suggestedParams = params)
         .build();
-    AtomicTransfer.group([transaction1, transaction2]);
+
+    AtomicTransfer.group([tx1, tx2]);
 
     // Sign the transaction
-    final tx1Bytes = Encoder.encodeMessagePack(transaction1.toMessagePack());
-    final tx2Bytes = Encoder.encodeMessagePack(transaction2.toMessagePack());
-    final signedBytes = await connector.algo?.signTransactions(
-      [tx1Bytes, tx2Bytes],
+    final signedBytes = await provider.signTransactions(
+      [tx1.toBytes(), tx2.toBytes()],
       params: {
         'message': 'Optional description message',
       },
     );
-
-    if (signedBytes == null) return '';
 
     // Broadcast the transaction
     final txId = await algorand.sendRawTransactions(
