@@ -6,13 +6,10 @@ import 'dart:typed_data';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:uuid/uuid.dart';
 import 'package:walletconnect_dart/src/api/api.dart';
-import 'package:walletconnect_dart/src/crypto/cipher_box.dart';
 import 'package:walletconnect_dart/src/crypto/crypto.dart';
 import 'package:walletconnect_dart/src/crypto/encrypted_payload.dart';
 import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
 import 'package:walletconnect_dart/src/network/network.dart';
-import 'package:walletconnect_dart/src/providers/providers.dart';
-import 'package:walletconnect_dart/src/providers/wallet_connect_provider.dart';
 import 'package:walletconnect_dart/src/session/session.dart';
 import 'package:walletconnect_dart/src/utils/bridge_utils.dart';
 import 'package:walletconnect_dart/src/utils/event.dart';
@@ -63,9 +60,6 @@ class WalletConnect {
   /// The algorithm used to encrypt/decrypt payloads
   CipherBox cipherBox;
 
-  /// The provider used to facilitate signing
-  WalletConnectProvider? provider;
-
   /// The map of request ids to pending requests.
   final _pendingRequests = <int, _Request>{};
 
@@ -79,7 +73,6 @@ class WalletConnect {
     required this.cipherBox,
     required this.transport,
   }) : _eventBus = EventBus() {
-    provider = AlgorandWCProvider(this);
     // Init transport event handling
     _initTransport();
 
@@ -155,15 +148,17 @@ class WalletConnect {
   }
 
   /// Create a new session.
-  Future<SessionStatus> connect({int? chainId}) async {
+  Future<SessionStatus> connect(
+      {int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
     if (connected) {
+      onDisplayUri?.call(session.toUri());
       return SessionStatus(
         chainId: session.chainId,
         accounts: session.accounts,
       );
     }
 
-    return await createSession(chainId: chainId);
+    return await createSession(chainId: chainId, onDisplayUri: onDisplayUri);
   }
 
   /// Create a new session between the dApp and wallet.
@@ -336,32 +331,74 @@ class WalletConnect {
     await _handleSessionDisconnect(errorMessage: message);
   }
 
-  /// Set the default signing provider.
-  void setDefaultProvider(WalletConnectProvider provider) {
-    this.provider = provider;
+  /// Check if the request is a silent payload.
+  bool isSilentPayload(JsonRpcRequest request) {
+    if (request.method.startsWith('wc_')) {
+      return true;
+    }
+
+    if (signingMethods.contains(request.method)) {
+      return false;
+    }
+
+    return true;
   }
 
-  /// Sign a transaction.
-  Future<List<Uint8List>> signTransaction(
-    Uint8List transaction, {
-    Map<String, dynamic> params = const {},
-    WalletConnectProvider? provider,
-  }) async {
-    provider = provider ??
-        this.provider ??
-        (throw WalletConnectException('No provider specified.'));
-    return provider.signTransaction(transaction: transaction, params: params);
+  /// Get a new random, payload id.
+  int get payloadId {
+    var rng = Random();
+    final date = (DateTime.now().millisecondsSinceEpoch * pow(10, 3)).toInt();
+    final extra = (rng.nextDouble() * pow(10, 3)).floor();
+    return date + extra;
   }
-  /// Sign transactions.
-  Future<List<Uint8List>> signTransactions(
-    List<Uint8List> transactions, {
-    Map<String, dynamic> params = const {},
-    WalletConnectProvider? provider,
-  }) async {
-    provider = provider ??
-        this.provider ??
-        (throw WalletConnectException('No provider specified.'));
-    return provider.signTransactions(transactions: transactions, params: params);
+
+  /// Check if a current session is connected.
+  bool get connected => session.connected;
+
+  /// Register callback listeners.
+  void registerListeners({
+    OnConnectRequest? onConnect,
+    OnSessionUpdate? onSessionUpdate,
+    OnDisconnect? onDisconnect,
+  }) {
+    on<SessionStatus>('connect', (data) => onConnect?.call(data));
+    on<WCSessionUpdateResponse>(
+        'session_update', (data) => onSessionUpdate?.call(data));
+    on('disconnect', (data) => onDisconnect?.call());
+  }
+
+  void _handleIncomingMessages(WebSocketMessage message) async {
+    final activeTopics = [session.clientId, session.handshakeTopic];
+    if (!activeTopics.contains(message.topic)) {
+      return;
+    }
+
+    final key = session.key;
+    if (key == null) {
+      return;
+    }
+
+    // Decrypt the payload
+    final encryptedPayload = EncryptedPayload.fromJson(
+      json.decode(message.payload),
+    );
+    final payload = await cipherBox.decrypt(
+      payload: encryptedPayload,
+      key: key,
+    );
+
+    // Decode the data
+    final data = json.decode(utf8.decode(payload));
+
+    // Check if the incoming message is a request
+    if (_isJsonRpcRequest(data)) {
+      final request = JsonRpcRequest.fromJson(data);
+      _eventBus.fire(Event(request.method, request));
+      return;
+    }
+
+    // Handle the response
+    _handleSingleResponse(data);
   }
 
   /// Sends a JSON-RPC-2 compliant request to invoke the given [method].
@@ -415,30 +452,6 @@ class WalletConnect {
     );
   }
 
-  /// Check if the request is a silent payload.
-  bool isSilentPayload(JsonRpcRequest request) {
-    if (request.method.startsWith('wc_')) {
-      return true;
-    }
-
-    if (signingMethods.contains(request.method)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  /// Get a new random, payload id.
-  int get payloadId {
-    var rng = Random();
-    final date = (DateTime.now().millisecondsSinceEpoch * pow(10, 3)).toInt();
-    final extra = (rng.nextDouble() * pow(10, 3)).floor();
-    return date + extra;
-  }
-
-  /// Check if a current session is connected.
-  bool get connected => session.connected;
-
   void _initTransport() {
     transport.on('message', _handleIncomingMessages);
 
@@ -462,52 +475,6 @@ class WalletConnect {
     on<JsonRpcRequest>('wc_sessionUpdate', (payload) {
       _handleSessionResponse(payload.params?[0] ?? {});
     });
-  }
-
-  /// Register callback listeners.
-  void registerListeners({
-    OnConnectRequest? onConnect,
-    OnSessionUpdate? onSessionUpdate,
-    OnDisconnect? onDisconnect,
-  }) {
-    on<SessionStatus>('connect', (data) => onConnect?.call(data));
-    on<WCSessionUpdateResponse>(
-        'session_update', (data) => onSessionUpdate?.call(data));
-    on('disconnect', (data) => onDisconnect?.call());
-  }
-
-  void _handleIncomingMessages(WebSocketMessage message) async {
-    final activeTopics = [session.clientId, session.handshakeTopic];
-    if (!activeTopics.contains(message.topic)) {
-      return;
-    }
-
-    final key = session.key;
-    if (key == null) {
-      return;
-    }
-
-    // Decrypt the payload
-    final encryptedPayload = EncryptedPayload.fromJson(
-      json.decode(message.payload),
-    );
-    final payload = await cipherBox.decrypt(
-      payload: encryptedPayload,
-      key: key,
-    );
-
-    // Decode the data
-    final data = json.decode(utf8.decode(payload));
-
-    // Check if the incoming message is a request
-    if (_isJsonRpcRequest(data)) {
-      final request = JsonRpcRequest.fromJson(data);
-      _eventBus.fire(Event(request.method, request));
-      return;
-    }
-
-    // Handle the response
-    _handleSingleResponse(data);
   }
 
   /// Handles a decoded response from the server after batches have been
