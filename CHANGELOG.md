@@ -1,3 +1,7 @@
+## 0.0.7
+
+* Added support for Ethereum
+
 ## 0.0.6
 
 * Added support for atomic transfers

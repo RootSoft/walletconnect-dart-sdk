@@ -17,7 +17,13 @@ WalletConnect connects mobile & web applications to supported mobile wallets. Th
 
 WalletConnect-Dart-SDK is a community SDK and port of the official WalletConnect-monorepo.
 
-> :warning: At the moment, only [Algorand](https://www.algorand.com/) is supported!
+WalletConnect-Dart currently supports:
+* Algorand
+* Ethereum
+
+You can easily add your own network by extending from `WalletConnectProvider` and implementing the required methods using `sendCustomRequest`.
+An example from Binance Smart Chain can be found [here](https://docs.binance.org/walletconnect.html).
+For more information regarding the implementation, check out `EthereumWalletConnectProvider` and `AlgorandWalletConnectProvider`.
 
 **WalletConnect lets you build:**
 - Decentralized web applications and display QR codes with [qr_flutter](https://pub.dev/packages/qr_flutter)
@@ -78,17 +84,36 @@ if (!connector.connected) {
 **Sign transaction**
 
 ```dart
-// Set a default walletconnect provider
-connector.setDefaultProvider(AlgorandWCProvider(connector));
+final sender = Address.fromAlgorandAddress(address: session.accounts[0]);
+
+// Fetch the suggested transaction params
+final params = await algorand.getSuggestedTransactionParams();
+
+// Build the transaction
+final tx = await (PaymentTransactionBuilder()
+  ..sender = sender
+  ..noteText = 'Signed with WalletConnect'
+  ..amount = Algo.toMicroAlgos(0.0001)
+  ..receiver = sender
+  ..suggestedParams = params)
+    .build();
 
 // Sign the transaction
-final txBytes = Encoder.encodeMessagePack(transaction.toMessagePack());
-final signedBytes = await connector.signTransaction(
-    txBytes,
+final signedBytes = await provider.signTransaction(
+    tx.toBytes(),
     params: {
-      'message': 'Optional description message',
+    'message': 'Optional description message',
     },
 );
+
+// Broadcast the transaction
+final txId = await algorand.sendRawTransactions(
+    signedBytes,
+    waitForConfirmation: true,
+);
+
+// Kill the session
+connector.killSession();
 ```
 
 ### Wallets
@@ -146,6 +171,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 ## Credits
 
 - [Tomas Verhelst](https://github.com/rootsoft)
+- [Tom Friml](https://github.com/3ph)  
 - [All Contributors](../../contributors)
 
 ## License
