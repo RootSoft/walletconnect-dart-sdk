@@ -6,15 +6,15 @@ import 'package:walletconnect_dart/src/providers/wallet_connect_provider.dart';
 import 'package:walletconnect_dart/src/walletconnect.dart';
 
 /// A provider implementation to easily support the Algorand blockchain.
-class AlgorandWCProvider extends WalletConnectProvider {
-  AlgorandWCProvider(WalletConnect connector) : super(connector: connector);
+class AlgorandWalletConnectProvider extends WalletConnectProvider {
+  AlgorandWalletConnectProvider(WalletConnect connector)
+      : super(connector: connector);
 
   /// Signs an unsigned transaction by sending a request to the wallet.
   /// Returns the signed transaction bytes.
   /// Throws [WalletConnectException] if unable to sign the transaction.
-  @override
-  Future<List<Uint8List>> signTransaction({
-    required Uint8List transaction,
+  Future<List<Uint8List>> signTransaction(
+    Uint8List transaction, {
     Map<String, dynamic> params = const {},
   }) async {
     final txToSign = {
@@ -28,9 +28,8 @@ class AlgorandWCProvider extends WalletConnectProvider {
   /// Signs unsigned transactions by sending a request to the wallet.
   /// Returns the signed transactions bytes.
   /// Throws [WalletConnectException] if unable to sign the transactions.
-  @override
-  Future<List<Uint8List>> signTransactions({
-    required List<Uint8List> transactions,
+  Future<List<Uint8List>> signTransactions(
+    List<Uint8List> transactions, {
     Map<String, dynamic> params = const {},
   }) async {
     final txsToSign = transactions

@@ -18,8 +18,7 @@ void main() async {
     ),
   );
 
-  // Set a default walletconnect provider
-  connector.setDefaultProvider(AlgorandWCProvider(connector));
+  final algo = AlgorandWalletConnectProvider(connector);
 
   // Check if connection is already established
   final session = await connector.createSession(
@@ -32,7 +31,7 @@ void main() async {
   final params = await algorand.getSuggestedTransactionParams();
 
   // Build the transaction
-  final transaction = await (PaymentTransactionBuilder()
+  final tx = await (PaymentTransactionBuilder()
         ..sender = sender
         ..noteText = 'Signed with WalletConnect'
         ..amount = Algo.toMicroAlgos(0.0001)
@@ -41,9 +40,8 @@ void main() async {
       .build();
 
   // Sign the transaction
-  final txBytes = Encoder.encodeMessagePack(transaction.toMessagePack());
-  final signedBytes = await connector.signTransaction(
-    txBytes,
+  final signedBytes = await algo.signTransaction(
+    tx.toBytes(),
     params: {
       'message': 'Optional description message',
     },

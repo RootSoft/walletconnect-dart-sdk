@@ -1,18 +1,18 @@
 import 'package:algorand_dart/algorand_dart.dart';
+import 'package:mobile_dapp/transaction_tester.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
-class WalletConnector {
+class AlgorandTransactionTester extends TransactionTester {
   final Algorand algorand;
-  final WalletConnect connector;
   final AlgorandWalletConnectProvider provider;
 
-  const WalletConnector._internal({
+  AlgorandTransactionTester._internal({
+    required WalletConnect connector,
     required this.algorand,
-    required this.connector,
     required this.provider,
-  });
+  }) : super(connector: connector);
 
-  factory WalletConnector() {
+  factory AlgorandTransactionTester() {
     final algorand = Algorand(
       algodClient: AlgodClient(apiUrl: AlgoExplorer.TESTNET_ALGOD_API_URL),
     );
@@ -31,13 +31,24 @@ class WalletConnector {
 
     final provider = AlgorandWalletConnectProvider(connector);
 
-    return WalletConnector._internal(
-      algorand: algorand,
+    return AlgorandTransactionTester._internal(
       connector: connector,
+      algorand: algorand,
       provider: provider,
     );
   }
 
+  @override
+  Future<SessionStatus> connect({OnDisplayUriCallback? onDisplayUri}) async {
+    return connector.connect(chainId: 4160, onDisplayUri: onDisplayUri);
+  }
+
+  @override
+  Future<void> disconnect() async {
+    await connector.killSession();
+  }
+
+  @override
   Future<String> signTransaction(SessionStatus session) async {
     final sender = Address.fromAlgorandAddress(address: session.accounts[0]);
 
@@ -73,6 +84,7 @@ class WalletConnector {
     return txId;
   }
 
+  @override
   Future<String> signTransactions(SessionStatus session) async {
     final sender = Address.fromAlgorandAddress(address: session.accounts[0]);
 
