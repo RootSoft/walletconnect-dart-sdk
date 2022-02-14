@@ -14,7 +14,7 @@ class WalletConnectSession {
   int version;
   bool connected;
   List<String> accounts;
-  int chainId;
+  dynamic chainId;
   String bridge = '';
 
   @KeyConverter()

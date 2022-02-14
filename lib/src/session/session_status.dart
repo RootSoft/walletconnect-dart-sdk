@@ -1,6 +1,6 @@
 /// Information regarding the current session.
 class SessionStatus {
-  final int chainId;
+  final dynamic chainId;
   final List<String> accounts;
   final int? networkId;
   final String? rpcUrl;
@@ -13,7 +13,7 @@ class SessionStatus {
   });
 
   SessionStatus copyWith({
-    int? chainId,
+    dynamic chainId,
     List<String>? accounts,
     int? networkId,
     String? rpcUrl,

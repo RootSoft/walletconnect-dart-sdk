@@ -8,5 +8,5 @@ abstract class WalletConnectProvider {
   WalletConnectProvider({required this.connector});
 
   /// Get the chain id.
-  int get chainId;
+  dynamic get chainId;
 }

@@ -11,7 +11,7 @@ class WCSessionRequestResponse {
   final bool approved;
 
   @JsonKey(name: 'chainId')
-  final int? chainId;
+  final dynamic chainId;
 
   @JsonKey(name: 'accounts', defaultValue: [])
   final List<String> accounts;
