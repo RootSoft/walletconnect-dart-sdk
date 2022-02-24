@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_dapp/algorand_transaction_tester.dart';
 import 'package:mobile_dapp/ethereum_transaction_tester.dart';
 import 'package:mobile_dapp/transaction_tester.dart';
+import 'package:mobile_dapp/wallet_connect_lifecycle.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
@@ -58,71 +59,75 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text('Select network: ',
-                      style: Theme.of(context).textTheme.headline6),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: DropdownButton(
-                    value: _networks[_network!.index],
-                    items: _networks
-                        .map(
-                          (value) => DropdownMenuItem(
-                              value: value, child: Text(value)),
-                        )
-                        .toList(),
-                    onChanged: _changeNetworks),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+    return WalletConnectLifecycle(
+      connector: _transactionTester!.connector,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Column(
+          children: [
+            Row(
               children: [
-                (_displayUri.isEmpty)
-                    ? Padding(
-                        padding: const EdgeInsets.only(
-                          left: 16,
-                          right: 16,
-                          bottom: 16,
-                        ),
-                        child: Text(
-                          'Click on the button below to transfer ${_network == NetworkType.ethereum ? '0.0001 Eth from Ethereum' : '0.0001 Algo from the Algorand'} account connected through WalletConnect to the same account.',
-                          style: Theme.of(context).textTheme.headline6,
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    : QrImage(data: _displayUri),
-                ElevatedButton(
-                  onPressed: _transactionStateToAction(context, state: _state),
-                  child: Text(
-                    _transactionStateToString(state: _state),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text('Select network: ',
+                        style: Theme.of(context).textTheme.headline6),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _transactionTester?.disconnect();
-                  },
-                  child: Text(
-                    'Close',
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: DropdownButton(
+                      value: _networks[_network!.index],
+                      items: _networks
+                          .map(
+                            (value) => DropdownMenuItem(
+                                value: value, child: Text(value)),
+                          )
+                          .toList(),
+                      onChanged: _changeNetworks),
                 ),
               ],
             ),
-          ),
-        ],
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  (_displayUri.isEmpty)
+                      ? Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 16,
+                          ),
+                          child: Text(
+                            'Click on the button below to transfer ${_network == NetworkType.ethereum ? '0.0001 Eth from Ethereum' : '0.0001 Algo from the Algorand'} account connected through WalletConnect to the same account.',
+                            style: Theme.of(context).textTheme.headline6,
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : QrImage(data: _displayUri),
+                  ElevatedButton(
+                    onPressed:
+                        _transactionStateToAction(context, state: _state),
+                    child: Text(
+                      _transactionStateToString(state: _state),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await _transactionTester?.disconnect();
+                    },
+                    child: Text(
+                      'Close',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

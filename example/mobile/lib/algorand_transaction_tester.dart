@@ -45,7 +45,7 @@ class AlgorandTransactionTester extends TransactionTester {
 
   @override
   Future<void> disconnect() async {
-    await connector.killSession();
+    await connector.close(forceClose: true);
   }
 
   @override

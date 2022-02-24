@@ -162,6 +162,12 @@ class WalletConnect {
     return await createSession(chainId: chainId, onDisplayUri: onDisplayUri);
   }
 
+  /// Reconnects to the web socket server.
+  void reconnect() {
+    _transport.close(forceClose: true);
+    _transport.open();
+  }
+
   /// Create a new session between the dApp and wallet.
   Future<SessionStatus> createSession({
     int? chainId,
@@ -334,8 +340,8 @@ class WalletConnect {
 
   /// Close the connection
   /// This does not kill and clear the session.
-  Future close() async {
-    return _transport.close();
+  Future close({bool forceClose = false}) async {
+    return _transport.close(forceClose: forceClose);
   }
 
   /// Check if the request is a silent payload.
@@ -361,6 +367,9 @@ class WalletConnect {
 
   /// Check if a current session is connected.
   bool get connected => session.connected;
+
+  /// Check if walletconnect is currently connected with the bridge.
+  bool get bridgeConnected => _transport.connected;
 
   /// Register callback listeners.
   void registerListeners({

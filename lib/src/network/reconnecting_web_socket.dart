@@ -121,6 +121,7 @@ class ReconnectingWebSocket {
 
   void _onOpen(bool reconnectAttempt) {
     _connected = true;
+    _shouldReconnect = true;
     onOpen?.call(reconnectAttempt);
   }
 
