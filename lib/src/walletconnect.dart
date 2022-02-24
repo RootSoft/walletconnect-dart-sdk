@@ -55,7 +55,7 @@ class WalletConnect {
   final List<String> signingMethods;
 
   /// The socket transport layer
-  SocketTransport transport;
+  SocketTransport _transport;
 
   /// The algorithm used to encrypt/decrypt payloads
   CipherBox cipherBox;
@@ -71,8 +71,9 @@ class WalletConnect {
     required this.sessionStorage,
     required this.signingMethods,
     required this.cipherBox,
-    required this.transport,
-  }) : _eventBus = EventBus() {
+    required SocketTransport transport,
+  })  : _transport = transport,
+        _eventBus = EventBus() {
     // Init transport event handling
     _initTransport();
 
@@ -328,7 +329,13 @@ class WalletConnect {
 
     unawaited(_sendRequest(request));
 
-    await _handleSessionDisconnect(errorMessage: message);
+    await _handleSessionDisconnect(errorMessage: message, forceClose: true);
+  }
+
+  /// Close the connection
+  /// This does not kill and clear the session.
+  Future close() async {
+    return _transport.close();
   }
 
   /// Check if the request is a silent payload.
@@ -421,7 +428,7 @@ class WalletConnect {
     final silent = isSilentPayload(request);
 
     // Send the request
-    transport.send(
+    _transport.send(
       payload: payload.toJson(),
       topic: topic ?? session.peerId,
       silent: silent,
@@ -445,7 +452,7 @@ class WalletConnect {
     );
 
     // Send the request
-    transport.send(
+    _transport.send(
       payload: payload.toJson(),
       topic: session.peerId,
       silent: true,
@@ -453,10 +460,10 @@ class WalletConnect {
   }
 
   void _initTransport() {
-    transport.on('message', _handleIncomingMessages);
+    _transport.on('message', _handleIncomingMessages);
 
     // Open a new connection
-    transport.open();
+    _transport.open();
   }
 
   /// Handles incoming JSON RPC requests that do not have a mapped id.
@@ -551,14 +558,17 @@ class WalletConnect {
     }
   }
 
-  Future _handleSessionDisconnect({String? errorMessage}) async {
+  Future _handleSessionDisconnect({
+    String? errorMessage,
+    bool forceClose = false,
+  }) async {
     session.reset();
 
     // Remove storage session
     await sessionStorage?.removeSession();
 
     // Close the web socket connection
-    await transport.close();
+    await _transport.close(forceClose: forceClose);
 
     // Notify listeners
     _eventBus.fire(Event<Map<String, dynamic>>('disconnect', {

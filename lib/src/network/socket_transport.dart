@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:walletconnect_dart/src/api/websocket/web_socket_message.dart';
+import 'package:walletconnect_dart/src/network/reconnecting_web_socket.dart';
 import 'package:walletconnect_dart/src/utils/event.dart';
 import 'package:walletconnect_dart/src/utils/event_bus.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// The transport layer used to perform JSON-RPC 2 requests.
 /// A client calls methods on a server and handles the server's responses to
@@ -14,11 +14,9 @@ class SocketTransport {
   final String url;
   final List<String> subscriptions;
 
+  ReconnectingWebSocket? _socket;
+
   final EventBus _eventBus;
-
-  WebSocketChannel? channel;
-
-  bool _connected = false;
 
   /// The transport layer used to perform JSON-RPC 2 requests.
   SocketTransport({
@@ -36,32 +34,34 @@ class SocketTransport {
       protocol: protocol,
       version: version.toString(),
     );
-    channel = WebSocketChannel.connect(Uri.parse(wsUrl));
-    _connected = true;
+
+    _socket = ReconnectingWebSocket(
+      url: wsUrl,
+      maxReconnectAttempts: 5,
+      debug: false,
+      onOpen: (reconnectAttempt) {},
+      onClose: () {},
+      onMessage: _socketReceive,
+    );
+
+    _socket?.open(false);
 
     // Queue subscriptions
     _queueSubscriptions();
-
-    // Listen for messages
-    channel?.stream.listen(_socketReceive, onError: (error) {
-      _connected = false;
-    }, onDone: () {
-      _connected = false;
-    });
   }
 
   /// Closes the web socket connection.
-  Future close() async {
-    await channel?.sink.close();
+  Future close({bool forceClose = false}) async {
+    return _socket?.close(forceClose: forceClose);
   }
 
   /// Send a given payload to the server.
   /// The payload is json-encoded before sending.
-  void send({
+  bool send({
     required Map<String, dynamic> payload,
     required String topic,
     bool silent = false,
-  }) async {
+  }) {
     final data = {
       'topic': topic,
       'type': 'pub',
@@ -70,7 +70,7 @@ class SocketTransport {
     };
 
     final message = json.encode(data);
-    channel?.sink.add(message);
+    return _socket?.send(message) ?? false;
   }
 
   /// Subscribe to a given topic.
@@ -83,7 +83,7 @@ class SocketTransport {
     };
 
     final message = json.encode(data);
-    channel?.sink.add(message);
+    _socket?.send(message);
   }
 
   /// Listen to events.
@@ -95,7 +95,7 @@ class SocketTransport {
   }
 
   /// Check if we are currently connected with the socket.
-  bool get connected => _connected;
+  bool get connected => _socket?.connected ?? false;
 
   void _socketReceive(event) {
     if (event is! String) return;

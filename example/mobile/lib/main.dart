@@ -111,6 +111,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     _transactionStateToString(state: _state),
                   ),
                 ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _transactionTester?.disconnect();
+                  },
+                  child: Text(
+                    'Close',
+                  ),
+                ),
               ],
             ),
           ),
