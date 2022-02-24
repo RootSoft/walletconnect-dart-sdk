@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:walletconnect_dart/src/api/websocket/web_socket_message.dart';
@@ -27,7 +28,7 @@ class SocketTransport {
   }) : _eventBus = EventBus();
 
   /// Open a new connection to a web socket server.
-  void open() {
+  void open({OnSocketOpen? onOpen, OnSocketClose? onClose}) {
     // Connect the channel
     final wsUrl = getWebSocketUrl(
       url: url,
@@ -86,6 +87,19 @@ class SocketTransport {
     _socket?.send(message);
   }
 
+  /// Send an ack.
+  void ack({required String topic}) {
+    final data = {
+      'topic': topic,
+      'type': 'ack',
+      'payload': '',
+      'silent': true,
+    };
+
+    final message = json.encode(data);
+    _socket?.send(message);
+  }
+
   /// Listen to events.
   void on<T>(String eventName, OnEvent<T> callback) {
     _eventBus
@@ -100,11 +114,14 @@ class SocketTransport {
   void _socketReceive(event) {
     if (event is! String) return;
 
-    // TODO Check if websocket message is valid
-
-    final data = json.decode(event);
-    final message = WebSocketMessage.fromJson(data);
-    _eventBus.fire(Event<WebSocketMessage>('message', message));
+    try {
+      final data = json.decode(event);
+      final message = WebSocketMessage.fromJson(data);
+      ack(topic: message.topic);
+      _eventBus.fire(Event<WebSocketMessage>('message', message));
+    } catch (ex) {
+      return;
+    }
   }
 
   /// Get the websocket url based on a given url.
