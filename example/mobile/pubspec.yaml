@@ -13,7 +13,11 @@ dependencies:
 
   # WalletConnect
   walletconnect_dart:
-    path: ../../
+    git:
+      url: git://github.com/RootSoft/walletconnect-dart-sdk.git
+      ref: feature/dynamic-chainid
+
+
 
   # Algorand
   algorand_dart: ^1.0.1

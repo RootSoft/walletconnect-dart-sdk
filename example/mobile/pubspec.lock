@@ -472,9 +472,11 @@ packages:
   walletconnect_dart:
     dependency: "direct main"
     description:
-      path: "../.."
-      relative: true
-    source: path
+      path: "."
+      ref: "feature/dynamic-chainid"
+      resolved-ref: "1361d1d99388aeff5d2f1f02bee4fcb6de1a523f"
+      url: "git://github.com/RootSoft/walletconnect-dart-sdk.git"
+    source: git
     version: "0.0.7"
   watcher:
     dependency: transitive
