@@ -303,12 +303,13 @@ class WalletConnect {
 
   /// Send a custom request.
   Future sendCustomRequest({
+    int? id,
     required String method,
     required List<dynamic> params,
     String? topic,
   }) async {
     final request = JsonRpcRequest(
-      id: payloadId,
+      id: id ?? payloadId,
       method: method,
       params: params,
     );
