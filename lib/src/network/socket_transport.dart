@@ -40,8 +40,8 @@ class SocketTransport {
       url: wsUrl,
       maxReconnectAttempts: 5,
       debug: false,
-      onOpen: (reconnectAttempt) {},
-      onClose: () {},
+      onOpen: onOpen,
+      onClose: onClose,
       onMessage: _socketReceive,
     );
 
