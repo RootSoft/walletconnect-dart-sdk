@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
@@ -41,9 +42,11 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
     required String address,
     required Map<String, dynamic> typedData,
   }) async {
+    final encodedTypedData = jsonEncode(typedData);
+
     final result = await connector.sendCustomRequest(
       method: 'eth_signTypedData',
-      params: [address, typedData],
+      params: [address, encodedTypedData],
     );
 
     return result;
