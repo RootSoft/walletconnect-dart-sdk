@@ -73,14 +73,10 @@ class WalletConnect {
     required this.cipherBox,
     required this.transport,
   }) : _eventBus = EventBus() {
-    // Init transport event handling
-    _initTransport();
-
-    // Subscribe to internal events
-    _subscribeToInternalEvents();
-
     if (session.handshakeTopic.isNotEmpty) {
-      transport.subscribe(topic: session.handshakeTopic);
+      // for existing session open transport
+      // otherwise wait till session creation
+      _initTransport();
     }
   }
 
@@ -170,6 +166,9 @@ class WalletConnect {
       throw WalletConnectException('Session currently connected');
     }
 
+    // Open transport and subcribe to internal events
+    _initTransport();
+
     // Generate encryption key
     session.key = await cipherBox.generateKey();
 
@@ -211,14 +210,18 @@ class WalletConnect {
       throw WalletConnectException('Session currently connected');
     }
 
+    if (session.peerId.isNotEmpty) {
+      transport.subscribe(topic: session.peerId);
+    }
+
     final params = {
       'approved': true,
       'chainId': chainId,
       'networkId': 0,
       'accounts': accounts,
       'rpcUrl': '',
-      'peerId': session.clientId,
-      'peerMeta': session.clientMeta,
+      'peerId': session.peerId,
+      'peerMeta': session.peerMeta,
     };
 
     final response = JsonRpcResponse(
@@ -326,7 +329,7 @@ class WalletConnect {
       ],
     );
 
-    unawaited(_sendRequest(request));
+    await _sendRequest(request);
 
     await _handleSessionDisconnect(errorMessage: message);
   }
@@ -368,7 +371,11 @@ class WalletConnect {
   }
 
   void _handleIncomingMessages(WebSocketMessage message) async {
-    final activeTopics = [session.clientId, session.handshakeTopic];
+    final activeTopics = [
+      session.clientId,
+      session.peerId,
+      session.handshakeTopic,
+    ];
     if (!activeTopics.contains(message.topic)) {
       return;
     }
@@ -453,10 +460,18 @@ class WalletConnect {
   }
 
   void _initTransport() {
+    // Init transport event handling
     transport.on('message', _handleIncomingMessages);
 
     // Open a new connection
     transport.open();
+
+    // Subscribe to internal events
+    _subscribeToInternalEvents();
+
+    if (session.handshakeTopic.isNotEmpty) {
+      transport.subscribe(topic: session.handshakeTopic);
+    }
   }
 
   /// Handles incoming JSON RPC requests that do not have a mapped id.
