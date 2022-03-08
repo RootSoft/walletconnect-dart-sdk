@@ -1,3 +1,9 @@
+## 0.0.8
+
+* Socket reconnection improvements
+* Fixed signTypeData
+* Allow passing custom payload id
+
 ## 0.0.7
 
 * Added support for Ethereum
