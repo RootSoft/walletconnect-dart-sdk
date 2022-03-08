@@ -62,5 +62,5 @@ class AlgorandWalletConnectProvider extends WalletConnectProvider {
 
   /// The chain id of the Algorand blockchain.
   @override
-  int get chainId => 4160;
+  String get chainId => '4160';
 }

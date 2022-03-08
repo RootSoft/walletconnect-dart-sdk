@@ -4,7 +4,7 @@ void main() async {
   final connector = _buildApp();
   if (!connector.connected) {
     final session = await connector.createSession(
-      chainId: 4160,
+      chainId: '4160',
       onDisplayUri: (uri) {
         print(uri);
 
@@ -63,10 +63,10 @@ void _connectWallet({required String uri}) {
 
   // Subscribe to session requests
   connector.on('session_request', (payload) async {
-    await connector.approveSession(chainId: 4160, accounts: ['test']);
+    await connector.approveSession(chainId: '4160', accounts: ['test']);
 
     await connector
-        .updateSession(SessionStatus(chainId: 4000, accounts: ['test2']));
+        .updateSession(SessionStatus(chainId: '4000', accounts: ['test2']));
   });
 
   connector.on('disconnect', (message) async {

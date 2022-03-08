@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:walletconnect_dart/src/session/peer_meta.dart';
 import 'package:walletconnect_dart/src/session/session_status.dart';
+import 'package:walletconnect_dart/src/utils/chain_id_converter.dart';
 
 part 'wc_session_request_response.g.dart';
 
@@ -11,7 +12,8 @@ class WCSessionRequestResponse {
   final bool approved;
 
   @JsonKey(name: 'chainId')
-  final int? chainId;
+  @ChainIdConverter()
+  final String? chainId;
 
   @JsonKey(name: 'accounts', defaultValue: [])
   final List<String> accounts;
@@ -37,7 +39,7 @@ class WCSessionRequestResponse {
 
   /// Get the status of the session;
   SessionStatus get status => SessionStatus(
-        chainId: chainId ?? 0,
+        chainId: chainId ?? '0',
         accounts: accounts,
       );
 

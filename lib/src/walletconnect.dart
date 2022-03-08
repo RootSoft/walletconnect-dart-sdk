@@ -150,11 +150,11 @@ class WalletConnect {
 
   /// Create a new session.
   Future<SessionStatus> connect(
-      {int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
+      {String? chainId, OnDisplayUriCallback? onDisplayUri}) async {
     if (connected) {
       onDisplayUri?.call(session.toUri());
       return SessionStatus(
-        chainId: session.chainId,
+        chainId: session.chainId ?? '',
         accounts: session.accounts,
       );
     }
@@ -170,7 +170,7 @@ class WalletConnect {
 
   /// Create a new session between the dApp and wallet.
   Future<SessionStatus> createSession({
-    int? chainId,
+    String? chainId,
     OnDisplayUriCallback? onDisplayUri,
   }) async {
     if (connected) {
@@ -212,7 +212,7 @@ class WalletConnect {
   /// Approve the session.
   Future approveSession({
     required List<String> accounts,
-    required int chainId,
+    required String chainId,
   }) async {
     if (connected) {
       throw WalletConnectException('Session currently connected');

@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:walletconnect_dart/src/utils/chain_id_converter.dart';
 
 part 'wc_session_update_response.g.dart';
 
@@ -7,8 +8,9 @@ class WCSessionUpdateResponse {
   @JsonKey(name: 'approved', defaultValue: false)
   final bool approved;
 
-  @JsonKey(name: 'chainId', defaultValue: 0)
-  final int chainId;
+  @JsonKey(name: 'chainId')
+  @ChainIdConverter()
+  final String? chainId;
 
   @JsonKey(name: 'accounts', defaultValue: [])
   final List<String> accounts;

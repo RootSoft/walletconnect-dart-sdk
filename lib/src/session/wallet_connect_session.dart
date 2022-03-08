@@ -4,6 +4,7 @@ import 'package:convert/convert.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:walletconnect_dart/src/exceptions/exceptions.dart';
 import 'package:walletconnect_dart/src/session/peer_meta.dart';
+import 'package:walletconnect_dart/src/utils/chain_id_converter.dart';
 import 'package:walletconnect_dart/src/utils/key_converter.dart';
 
 part 'wallet_connect_session.g.dart';
@@ -14,7 +15,8 @@ class WalletConnectSession {
   int version;
   bool connected;
   List<String> accounts;
-  int chainId;
+  @ChainIdConverter()
+  String? chainId;
   String bridge = '';
 
   @KeyConverter()
@@ -33,7 +35,7 @@ class WalletConnectSession {
     this.protocol = 'wc',
     this.version = 1,
     this.connected = false,
-    this.chainId = 0,
+    this.chainId = '0',
     this.bridge = '',
     this.key,
     this.clientId = '',
@@ -74,7 +76,7 @@ class WalletConnectSession {
   /// Approve the session.
   void approve(Map<String, dynamic> params) {
     connected = true;
-    chainId = params['chainId'] ?? chainId;
+    chainId = const ChainIdConverter().fromJson(params['chainId']) ?? chainId;
     accounts = params['accounts']?.cast<String>() ?? accounts;
     peerId = params['peerId'] ?? peerId;
     peerMeta = params.containsKey('peerMeta')

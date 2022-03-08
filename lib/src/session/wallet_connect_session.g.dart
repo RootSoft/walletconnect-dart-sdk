@@ -14,7 +14,9 @@ WalletConnectSession _$WalletConnectSessionFromJson(
       protocol: json['protocol'] as String? ?? 'wc',
       version: json['version'] as int? ?? 1,
       connected: json['connected'] as bool? ?? false,
-      chainId: json['chainId'] as int? ?? 0,
+      chainId: json['chainId'] == null
+          ? '0'
+          : const ChainIdConverter().fromJson(json['chainId']),
       bridge: json['bridge'] as String? ?? '',
       key: const KeyConverter().fromJson(json['key'] as String?),
       clientId: json['clientId'] as String? ?? '',
@@ -38,7 +40,7 @@ Map<String, dynamic> _$WalletConnectSessionToJson(
       'version': instance.version,
       'connected': instance.connected,
       'accounts': instance.accounts,
-      'chainId': instance.chainId,
+      'chainId': const ChainIdConverter().toJson(instance.chainId),
       'bridge': instance.bridge,
       'key': const KeyConverter().toJson(instance.key),
       'clientId': instance.clientId,

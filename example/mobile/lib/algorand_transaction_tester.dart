@@ -40,7 +40,7 @@ class AlgorandTransactionTester extends TransactionTester {
 
   @override
   Future<SessionStatus> connect({OnDisplayUriCallback? onDisplayUri}) async {
-    return connector.connect(chainId: 4160, onDisplayUri: onDisplayUri);
+    return connector.connect(chainId: '4160', onDisplayUri: onDisplayUri);
   }
 
   @override

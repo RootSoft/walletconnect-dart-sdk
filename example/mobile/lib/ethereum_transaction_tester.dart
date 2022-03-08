@@ -76,7 +76,7 @@ class EthereumTransactionTester extends TransactionTester {
 
   @override
   Future<SessionStatus> connect({OnDisplayUriCallback? onDisplayUri}) async {
-    return connector.connect(chainId: 3, onDisplayUri: onDisplayUri);
+    return connector.connect(chainId: '3', onDisplayUri: onDisplayUri);
   }
 
   @override

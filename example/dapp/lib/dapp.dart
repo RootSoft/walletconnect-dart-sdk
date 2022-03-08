@@ -22,7 +22,7 @@ void main() async {
 
   // Check if connection is already established
   final session = await connector.createSession(
-    chainId: 4160,
+    chainId: '4160',
     onDisplayUri: (uri) => print(uri),
   );
   final sender = Address.fromAlgorandAddress(address: session.accounts[0]);

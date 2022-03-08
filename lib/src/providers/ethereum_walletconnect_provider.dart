@@ -10,9 +10,9 @@ extension HexToBytes on String {
 
 /// A provider implementation to easily support the Ethereum blockchain.
 class EthereumWalletConnectProvider extends WalletConnectProvider {
-  final int _chainId;
+  final String _chainId;
 
-  EthereumWalletConnectProvider(WalletConnect connector, {int chainId = 0})
+  EthereumWalletConnectProvider(WalletConnect connector, {String chainId = '0'})
       : _chainId = chainId,
         super(connector: connector);
 
@@ -142,5 +142,5 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
   }
 
   @override
-  int get chainId => _chainId;
+  String get chainId => _chainId;
 }

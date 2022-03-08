@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:walletconnect_dart/src/session/peer_meta.dart';
+import 'package:walletconnect_dart/src/utils/chain_id_converter.dart';
 
 part 'wc_session_request.g.dart';
 
@@ -8,7 +9,8 @@ part 'wc_session_request.g.dart';
 @JsonSerializable()
 class WCSessionRequest {
   @JsonKey(name: 'chainId')
-  final int? chainId;
+  @ChainIdConverter()
+  final String? chainId;
 
   @JsonKey(name: 'peerId')
   final String? peerId;
