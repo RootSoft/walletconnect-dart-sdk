@@ -472,6 +472,10 @@ class WalletConnect {
     if (session.handshakeTopic.isNotEmpty) {
       transport.subscribe(topic: session.handshakeTopic);
     }
+
+    if (session.peerId.isNotEmpty) {
+      transport.subscribe(topic: session.peerId);
+    }
   }
 
   /// Handles incoming JSON RPC requests that do not have a mapped id.
