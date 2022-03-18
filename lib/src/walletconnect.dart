@@ -83,6 +83,10 @@ class WalletConnect {
     if (session.handshakeTopic.isNotEmpty) {
       transport.subscribe(topic: session.handshakeTopic);
     }
+
+    if (session.peerId.isNotEmpty) {
+      transport.subscribe(topic: session.peerId);
+    }
   }
 
   /// WalletConnect is an open source protocol for connecting decentralised
@@ -218,14 +222,18 @@ class WalletConnect {
       throw WalletConnectException('Session currently connected');
     }
 
+    if (session.peerId.isNotEmpty) {
+      _transport.subscribe(topic: session.peerId);
+    }
+
     final params = {
       'approved': true,
       'chainId': chainId,
       'networkId': 0,
       'accounts': accounts,
       'rpcUrl': '',
-      'peerId': session.clientId,
-      'peerMeta': session.clientMeta,
+      'peerId': session.peerId,
+      'peerMeta': session.peerMeta,
     };
 
     final response = JsonRpcResponse(
@@ -385,7 +393,11 @@ class WalletConnect {
   }
 
   void _handleIncomingMessages(WebSocketMessage message) async {
-    final activeTopics = [session.clientId, session.handshakeTopic];
+    final activeTopics = [
+      session.clientId,
+      session.handshakeTopic,
+      session.peerId,
+    ];
     if (!activeTopics.contains(message.topic)) {
       return;
     }
