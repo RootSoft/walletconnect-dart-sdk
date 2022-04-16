@@ -57,7 +57,14 @@ class AlgorandWalletConnectProvider extends WalletConnectProvider {
       throw WalletConnectException('Unable to sign transaction');
     }
 
-    return result.map((tx) => Uint8List.fromList(List<int>.from(tx))).toList();
+    // Check string (from ios)
+    var txs = result.whereType<String>().map(base64Decode).toList();
+
+    if (txs.isEmpty) {
+      txs = result.map((tx) => Uint8List.fromList(List<int>.from(tx))).toList();
+    }
+
+    return txs;
   }
 
   /// The chain id of the Algorand blockchain.
