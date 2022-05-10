@@ -39,7 +39,7 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
   /// [password] - The password of the account to sign data with
   ///
   /// Returns signature.
-  Future<String> pseronalSign(
+  Future<String> personalSign(
       {required String message,
       required String address,
       required String password}) async {
