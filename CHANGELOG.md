@@ -1,3 +1,7 @@
+## 0.0.9
+
+* Fix for signing Algorand iOS transactions
+
 ## 0.0.8
 
 * Socket reconnection improvements
