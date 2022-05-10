@@ -1,3 +1,7 @@
+## 0.0.10
+
+* Added eth: personal sign
+
 ## 0.0.9
 
 * Fix for signing Algorand iOS transactions
