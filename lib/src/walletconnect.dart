@@ -325,6 +325,21 @@ class WalletConnect {
     return _sendRequest(request);
   }
 
+  /// Send a custom response.
+  Future sendCustomResponse({
+    required int id,
+    String? result,
+    String? error,
+  }) async {
+    final response = JsonRpcResponse(
+      id: id,
+      result: result,
+      error: error,
+    );
+
+    return _sendResponse(response);
+  }
+
   /// Kill the current session.
   Future killSession({String? sessionError}) async {
     final message = sessionError ?? 'Session disconnected';
