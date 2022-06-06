@@ -140,7 +140,9 @@ class WalletConnect {
     );
   }
 
-  /// Listen to internal events.
+  /// Registers event subscriptions.
+  /// https://docs.walletconnect.com/client-api#register-event-subscription
+  /// Supported events: connect, disconnect, session_request, session_update
   void on<T>(String eventName, OnEvent<T> callback) {
     _eventBus
         .on<Event<T>>()
@@ -148,7 +150,7 @@ class WalletConnect {
         .listen((event) => callback(event.data));
   }
 
-  /// Create a new session.
+  /// Creates a new session calling [createSession] if it doesnt exists, or returns the instantiated one.
   Future<SessionStatus> connect(
       {int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
     if (connected) {
@@ -168,7 +170,9 @@ class WalletConnect {
     _transport.open();
   }
 
-  /// Create a new session between the dApp and wallet.
+  /// Creates a new session between the dApp and wallet.
+  /// The dapp should call this method for initiating the session.
+  /// https://docs.walletconnect.com/client-api#create-new-session-session_request
   Future<SessionStatus> createSession({
     int? chainId,
     OnDisplayUriCallback? onDisplayUri,
@@ -209,7 +213,8 @@ class WalletConnect {
     return WCSessionRequestResponse.fromJson(response).status;
   }
 
-  /// Approve the session.
+  /// Approves the session requested by the peer (dApp), responding with the accounts and client's id and meta.
+  /// https://docs.walletconnect.com/client-api#approve-session-request-connect
   Future approveSession({
     required List<String> accounts,
     required int chainId,
@@ -246,7 +251,8 @@ class WalletConnect {
     ));
   }
 
-  /// Reject the session.
+  /// Rejects the session requested by the peer (dApp), responding with reason message.
+  /// https://docs.walletconnect.com/client-api#reject-session-request-disconnect
   Future rejectSession({String? message}) async {
     if (connected) {
       throw WalletConnectException('Session currently connected');
@@ -269,7 +275,9 @@ class WalletConnect {
     _eventBus.fire(Event<String>('disconnect', message));
   }
 
-  /// Update the existing session.
+  /// Updates the actual session requesting the peer to change some session data
+  /// Only chainId and/or accounts can be changed.
+  /// https://docs.walletconnect.com/client-api#update-session-session_update
   Future updateSession(SessionStatus sessionStatus) async {
     if (!connected) {
       throw WalletConnectException('Session currently disconnected');
@@ -301,7 +309,36 @@ class WalletConnect {
     await _handleSessionResponse(response);
   }
 
+  /// Approves a pending request responding with a hex encoded string
+  /// https://docs.walletconnect.com/client-api#approve-call-request
+  Future approveRequest({
+    required int id,
+    required String result,
+  }) async {
+    final response = JsonRpcResponse(
+      id: id,
+      result: result,
+    );
+
+    return _sendResponse(response);
+  }
+
+  /// Rejects a pending request specifing the error
+  /// https://docs.walletconnect.com/client-api#reject-call-request
+  Future rejectRequest({
+    required int id,
+    String? errorMessage,
+  }) async {
+    final response = JsonRpcResponse(
+      id: id,
+      error: {'error': errorMessage},
+    );
+
+    return _sendResponse(response);
+  }
+
   /// Send a custom request.
+  /// https://docs.walletconnect.com/client-api#send-custom-request
   Future sendCustomRequest({
     int? id,
     required String method,
@@ -318,6 +355,7 @@ class WalletConnect {
   }
 
   /// Kill the current session.
+  /// https://docs.walletconnect.com/client-api#kill-session-disconnect
   Future killSession({String? sessionError}) async {
     final message = sessionError ?? 'Session disconnected';
 
@@ -419,6 +457,7 @@ class WalletConnect {
   }
 
   /// Sends a JSON-RPC-2 compliant request to invoke the given [method].
+  /// If no topic is specified, then the session`s peerId is used as topic.
   Future _sendRequest(
     JsonRpcRequest request, {
     String? topic,
