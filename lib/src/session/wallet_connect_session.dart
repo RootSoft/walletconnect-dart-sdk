@@ -8,7 +8,7 @@ import 'package:walletconnect_dart/src/utils/key_converter.dart';
 
 part 'wallet_connect_session.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class WalletConnectSession {
   String protocol;
   int version;
