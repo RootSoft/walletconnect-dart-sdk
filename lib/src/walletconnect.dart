@@ -267,6 +267,8 @@ class WalletConnect {
     session.connected = true;
     session.chainId = chainId;
     session.accounts = accounts;
+    // Store session
+    await sessionStorage?.store(session);
 
     // Notify listeners
     _eventBus.fire(Event<SessionStatus>(
