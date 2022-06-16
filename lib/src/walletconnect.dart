@@ -244,6 +244,8 @@ class WalletConnect {
 
     await _sendResponse(response);
     session.connected = true;
+    // Store session
+    await sessionStorage?.store(session);
 
     // Notify listeners
     _eventBus.fire(Event<SessionStatus>(
