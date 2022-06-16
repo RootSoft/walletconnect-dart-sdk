@@ -46,7 +46,12 @@ class WalletConnectSession {
     this.rpcUrl = '',
   });
 
-  factory WalletConnectSession.fromUri(String uri) {
+  factory WalletConnectSession.fromUri({
+    required String uri,
+    required String clientId,
+    required PeerMeta clientMeta,
+    List<String>? accounts,
+  }) {
     final protocolSeparator = uri.indexOf(':');
     final topicSeparator = uri.indexOf('@', protocolSeparator);
     final versionSeparator = uri.indexOf('?');
@@ -67,7 +72,9 @@ class WalletConnectSession {
       handshakeTopic: handshakeTopic,
       bridge: Uri.decodeFull(bridge),
       key: Uint8List.fromList(hex.decode(key)),
-      accounts: [],
+      accounts: accounts ?? [],
+      clientId: clientId,
+      clientMeta: clientMeta,
     );
   }
 
