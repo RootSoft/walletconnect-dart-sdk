@@ -1,3 +1,7 @@
+## 0.0.11
+
+* Various fixes for wallet
+
 ## 0.0.10
 
 * Added eth: personal sign

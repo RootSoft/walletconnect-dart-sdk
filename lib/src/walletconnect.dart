@@ -110,7 +110,11 @@ class WalletConnect {
     }
 
     if (uri.isNotEmpty) {
-      session = WalletConnectSession.fromUri(uri);
+      session = WalletConnectSession.fromUri(
+        uri: uri,
+        clientId: clientId ?? const Uuid().v4(),
+        clientMeta: clientMeta ?? const PeerMeta(),
+      );
     }
 
     session = session ??
@@ -352,6 +356,21 @@ class WalletConnect {
     );
 
     return _sendRequest(request);
+  }
+
+  /// Send a custom response.
+  Future sendCustomResponse({
+    required int id,
+    String? result,
+    String? error,
+  }) async {
+    final response = JsonRpcResponse(
+      id: id,
+      result: result,
+      error: error,
+    );
+
+    return _sendResponse(response);
   }
 
   /// Kill the current session.

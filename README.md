@@ -171,7 +171,8 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 ## Credits
 
 - [Tomas Verhelst](https://github.com/rootsoft)
-- [Tom Friml](https://github.com/3ph)  
+- [Tom Friml](https://github.com/3ph)
+- [juampiq6](https://github.com/juampiq6)  
 - [All Contributors](../../contributors)
 
 ## License
