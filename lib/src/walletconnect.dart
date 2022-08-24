@@ -378,20 +378,16 @@ class WalletConnect {
   Future killSession({String? sessionError}) async {
     final message = sessionError ?? 'Session disconnected';
 
-    final request = JsonRpcRequest(
-      id: payloadId,
-      method: 'wc_sessionUpdate',
-      params: [
-        {
-          'approved': false,
-          'chainId': null,
-          'networkId': null,
-          'accounts': null,
-        }
-      ],
+    final request = JsonRpcResponse(
+      id: session.handshakeId,
+      result: {
+        'approved': false,
+        'chainId': null,
+        'networkId': null,
+        'accounts': null,
+      },
     );
-
-    unawaited(_sendRequest(request));
+    await _sendResponse(request);
 
     await _handleSessionDisconnect(errorMessage: message, forceClose: true);
   }
