@@ -148,15 +148,11 @@ class WalletConnect {
   /// https://docs.walletconnect.com/client-api#register-event-subscription
   /// Supported events: connect, disconnect, session_request, session_update
   void on<T>(String eventName, OnEvent<T> callback) {
-    _eventBus
-        .on<Event<T>>()
-        .where((event) => event.name == eventName)
-        .listen((event) => callback(event.data));
+    _eventBus.on<Event<T>>().where((event) => event.name == eventName).listen((event) => callback(event.data));
   }
 
   /// Creates a new session calling [createSession] if it doesnt exists, or returns the instantiated one.
-  Future<SessionStatus> connect(
-      {int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
+  Future<SessionStatus> connect({int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
     if (connected) {
       onDisplayUri?.call(session.toUri());
       return SessionStatus(
@@ -244,6 +240,8 @@ class WalletConnect {
 
     await _sendResponse(response);
     session.connected = true;
+    session.chainId = chainId;
+    session.accounts = accounts;
 
     // Notify listeners
     _eventBus.fire(Event<SessionStatus>(
@@ -378,20 +376,16 @@ class WalletConnect {
   Future killSession({String? sessionError}) async {
     final message = sessionError ?? 'Session disconnected';
 
-    final request = JsonRpcRequest(
-      id: payloadId,
-      method: 'wc_sessionUpdate',
-      params: [
-        {
-          'approved': false,
-          'chainId': null,
-          'networkId': null,
-          'accounts': null,
-        }
-      ],
+    final request = JsonRpcResponse(
+      id: session.handshakeId,
+      result: {
+        'approved': false,
+        'chainId': null,
+        'networkId': null,
+        'accounts': null,
+      },
     );
-
-    unawaited(_sendRequest(request));
+    await _sendResponse(request);
 
     await _handleSessionDisconnect(errorMessage: message, forceClose: true);
   }
@@ -436,8 +430,7 @@ class WalletConnect {
     OnDisconnect? onDisconnect,
   }) {
     on<SessionStatus>('connect', (data) => onConnect?.call(data));
-    on<WCSessionUpdateResponse>(
-        'session_update', (data) => onSessionUpdate?.call(data));
+    on<WCSessionUpdateResponse>('session_update', (data) => onSessionUpdate?.call(data));
     on('disconnect', (data) => onDisconnect?.call());
   }
 
