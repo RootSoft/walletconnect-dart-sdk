@@ -467,7 +467,7 @@ class WalletConnect {
     // Check if the incoming message is a request
     if (_isJsonRpcRequest(data)) {
       final request = JsonRpcRequest.fromJson(data);
-      _eventBus.fire(Event(request.method, request));
+      _eventBus.fire(Event('call_request', request));
       return;
     }
 
