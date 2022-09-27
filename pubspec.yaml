@@ -1,6 +1,6 @@
 name: walletconnect_dart
 description: Open protocol for connecting decentralised applications to mobile wallets with QR code scanning or deep linking.
-version: 0.0.11
+version: 0.0.12
 homepage: https://walletconnect.org/
 repository: https://github.com/RootSoft/walletconnect-dart-sdk
 issue_tracker: https://github.com/RootSoft/walletconnect-dart-sdk/issues
@@ -10,7 +10,7 @@ environment:
 
 dependencies:
   # WebSocket Channel
-  web_socket_channel: ^2.1.0
+  web_socket_channel: ^2.2.0
 
   # UUID
   uuid: ^3.0.5
