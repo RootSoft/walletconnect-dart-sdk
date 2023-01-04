@@ -97,7 +97,7 @@ class ReconnectingWebSocket {
 
   void _debugPrint(Object message) {
     if (debug) {
-      _debugPrint(message);
+      print(message);
     }
   }
 
