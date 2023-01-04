@@ -174,22 +174,16 @@ class WalletConnect {
     _transport.close(forceClose: true);
     _transport.open(
       onOpen: (reconnectAttempt) {
-        print('reconnect onOpen');
         try {
           completer.complete();
-        } catch (e, s) {
-          print('$e, caller:$s');
-        }
+        } catch (e) {}
       },
       onClose: () {
-        print('reconnect onClose');
         try {
           completer.completeError(
             WalletConnectException('reconnect failed'),
           );
-        } catch (e, s) {
-          print('$e, caller:$s');
-        }
+        } catch (e) {}
       },
     );
     return completer.future;
@@ -517,13 +511,11 @@ class WalletConnect {
     final silent = isSilentPayload(request);
 
     // Send the request
-    bool result = _transport.send(
+    _transport.send(
       payload: payload.toJson(),
       topic: topic ?? session.peerId,
       silent: silent,
     );
-    //return false on second connect!!!
-    print('_transport.send result=$result');
     var completer = Completer.sync();
     _pendingRequests[request.id] = _Request(method, completer, Chain.current());
     return completer.future;

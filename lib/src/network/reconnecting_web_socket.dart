@@ -77,7 +77,7 @@ class ReconnectingWebSocket {
     }
 
     if (debug) {
-      print('attempt-connect');
+      print('ReconnectingWebSocket attempt-connect');
     }
 
     // TODO migrate to IOWebSocketChannel? -> WebSocketChannel does not have
@@ -90,6 +90,9 @@ class ReconnectingWebSocket {
     _subscription = _channel?.stream.listen(
       _onMessage,
       onError: (error) {
+        if (debug) {
+          print('ReconnectingWebSocket onError:$error');
+        }
         _onClose();
       },
       onDone: _onClose,
@@ -106,12 +109,17 @@ class ReconnectingWebSocket {
       _channel?.sink.add(data);
       return true;
     } catch (ex) {
+      if (debug) {
+        print('ReconnectingWebSocket send data error:$ex');
+      }
       return false;
     }
   }
 
   /// Closes the web socket connection.
   Future close({bool forceClose = false}) async {
+    print(
+        'ReconnectingWebSocket close, force:$forceClose. caller:${StackTrace.current}');
     _shouldReconnect = !forceClose;
     return _channel?.sink.close();
   }
@@ -121,6 +129,9 @@ class ReconnectingWebSocket {
 
   void _onOpen(bool reconnectAttempt) {
     _connected = true;
+    if (debug) {
+      print('ReconnectingWebSocket connected');
+    }
     _shouldReconnect = true;
     onOpen?.call(reconnectAttempt);
   }
@@ -158,6 +169,9 @@ class ReconnectingWebSocket {
   }
 
   void _onMessage(event) {
+    if (debug) {
+      print('ReconnectingWebSocket _onMessage, event: $event}');
+    }
     _reconnectAttempts = 0;
     onMessage?.call(event);
   }
