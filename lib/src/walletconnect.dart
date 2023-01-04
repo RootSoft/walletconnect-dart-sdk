@@ -148,11 +148,15 @@ class WalletConnect {
   /// https://docs.walletconnect.com/client-api#register-event-subscription
   /// Supported events: connect, disconnect, session_request, session_update
   void on<T>(String eventName, OnEvent<T> callback) {
-    _eventBus.on<Event<T>>().where((event) => event.name == eventName).listen((event) => callback(event.data));
+    _eventBus
+        .on<Event<T>>()
+        .where((event) => event.name == eventName)
+        .listen((event) => callback(event.data));
   }
 
   /// Creates a new session calling [createSession] if it doesnt exists, or returns the instantiated one.
-  Future<SessionStatus> connect({int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
+  Future<SessionStatus> connect(
+      {int? chainId, OnDisplayUriCallback? onDisplayUri}) async {
     if (connected) {
       onDisplayUri?.call(session.toUri());
       return SessionStatus(
@@ -165,9 +169,30 @@ class WalletConnect {
   }
 
   /// Reconnects to the web socket server.
-  void reconnect() {
+  Future<void> reconnect() {
+    var completer = Completer<void>();
     _transport.close(forceClose: true);
-    _transport.open();
+    _transport.open(
+      onOpen: (reconnectAttempt) {
+        print('reconnect onOpen');
+        try {
+          completer.complete();
+        } catch (e, s) {
+          print('$e, caller:$s');
+        }
+      },
+      onClose: () {
+        print('reconnect onClose');
+        try {
+          completer.completeError(
+            WalletConnectException('reconnect failed'),
+          );
+        } catch (e, s) {
+          print('$e, caller:$s');
+        }
+      },
+    );
+    return completer.future;
   }
 
   /// Creates a new session between the dApp and wallet.
@@ -430,7 +455,8 @@ class WalletConnect {
     OnDisconnect? onDisconnect,
   }) {
     on<SessionStatus>('connect', (data) => onConnect?.call(data));
-    on<WCSessionUpdateResponse>('session_update', (data) => onSessionUpdate?.call(data));
+    on<WCSessionUpdateResponse>(
+        'session_update', (data) => onSessionUpdate?.call(data));
     on('disconnect', (data) => onDisconnect?.call());
   }
 
@@ -489,12 +515,13 @@ class WalletConnect {
     final silent = isSilentPayload(request);
 
     // Send the request
-    _transport.send(
+    bool result = _transport.send(
       payload: payload.toJson(),
       topic: topic ?? session.peerId,
       silent: silent,
     );
-
+    //return false on second connect!!!
+    print('_transport.send result=$result');
     var completer = Completer.sync();
     _pendingRequests[request.id] = _Request(method, completer, Chain.current());
     return completer.future;
