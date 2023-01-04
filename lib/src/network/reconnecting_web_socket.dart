@@ -79,7 +79,6 @@ class ReconnectingWebSocket {
     if (debug) {
       print('attempt-connect');
     }
-    print('ReconnectingWebSocket start connect. caller:${StackTrace.current}');
 
     // TODO migrate to IOWebSocketChannel? -> WebSocketChannel does not have
     // TODO a way to flag for ready/connection states
@@ -91,7 +90,6 @@ class ReconnectingWebSocket {
     _subscription = _channel?.stream.listen(
       _onMessage,
       onError: (error) {
-        print('ReconnectingWebSocket onError:$error');
         _onClose();
       },
       onDone: _onClose,
@@ -108,15 +106,12 @@ class ReconnectingWebSocket {
       _channel?.sink.add(data);
       return true;
     } catch (ex) {
-      print('ReconnectingWebSocket send data error:$ex');
       return false;
     }
   }
 
   /// Closes the web socket connection.
   Future close({bool forceClose = false}) async {
-    print(
-        'ReconnectingWebSocket close, force:$forceClose. caller:${StackTrace.current}');
     _shouldReconnect = !forceClose;
     return _channel?.sink.close();
   }
@@ -126,7 +121,6 @@ class ReconnectingWebSocket {
 
   void _onOpen(bool reconnectAttempt) {
     _connected = true;
-    print('ReconnectingWebSocket connected');
     _shouldReconnect = true;
     onOpen?.call(reconnectAttempt);
   }
@@ -153,7 +147,6 @@ class ReconnectingWebSocket {
     if (debug) {
       print('Reconnecting in: ${duration.inMilliseconds}');
     }
-    print('ReconnectingWebSocket Reconnecting in: ${duration.inMilliseconds}');
     _reconnectSubscription?.cancel();
     _reconnectSubscription =
         Future.delayed(duration).asStream().listen((event) {
@@ -165,7 +158,6 @@ class ReconnectingWebSocket {
   }
 
   void _onMessage(event) {
-    print('ReconnectingWebSocket _onMessage, event: $event}');
     _reconnectAttempts = 0;
     onMessage?.call(event);
   }
