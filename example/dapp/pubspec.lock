@@ -126,7 +126,7 @@ packages:
       name: cryptography
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.5"
   dio:
     dependency: transitive
     description:
@@ -406,7 +406,7 @@ packages:
       path: "../.."
       relative: true
     source: path
-    version: "0.0.6"
+    version: "0.0.11"
   watcher:
     dependency: transitive
     description:

@@ -169,9 +169,24 @@ class WalletConnect {
   }
 
   /// Reconnects to the web socket server.
-  void reconnect() {
+  Future<void> reconnect() {
+    var completer = Completer<void>();
     _transport.close(forceClose: true);
-    _transport.open();
+    _transport.open(
+      onOpen: (reconnectAttempt) {
+        try {
+          completer.complete();
+        } catch (e) {}
+      },
+      onClose: () {
+        try {
+          completer.completeError(
+            WalletConnectException('reconnect failed'),
+          );
+        } catch (e) {}
+      },
+    );
+    return completer.future;
   }
 
   /// Creates a new session between the dApp and wallet.
@@ -244,6 +259,10 @@ class WalletConnect {
 
     await _sendResponse(response);
     session.connected = true;
+    session.chainId = chainId;
+    session.accounts = accounts;
+    // Store session
+    await sessionStorage?.store(session);
 
     // Notify listeners
     _eventBus.fire(Event<SessionStatus>(
@@ -378,20 +397,16 @@ class WalletConnect {
   Future killSession({String? sessionError}) async {
     final message = sessionError ?? 'Session disconnected';
 
-    final request = JsonRpcRequest(
-      id: payloadId,
-      method: 'wc_sessionUpdate',
-      params: [
-        {
-          'approved': false,
-          'chainId': null,
-          'networkId': null,
-          'accounts': null,
-        }
-      ],
+    final request = JsonRpcResponse(
+      id: session.handshakeId,
+      result: {
+        'approved': false,
+        'chainId': null,
+        'networkId': null,
+        'accounts': null,
+      },
     );
-
-    unawaited(_sendRequest(request));
+    await _sendResponse(request);
 
     await _handleSessionDisconnect(errorMessage: message, forceClose: true);
   }
@@ -501,7 +516,6 @@ class WalletConnect {
       topic: topic ?? session.peerId,
       silent: silent,
     );
-
     var completer = Completer.sync();
     _pendingRequests[request.id] = _Request(method, completer, Chain.current());
     return completer.future;

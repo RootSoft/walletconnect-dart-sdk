@@ -76,9 +76,7 @@ class ReconnectingWebSocket {
       _reconnectAttempts = 0;
     }
 
-    if (debug) {
-      print('attempt-connect');
-    }
+    _debugPrint('ReconnectingWebSocket attempt-connect');
 
     // TODO migrate to IOWebSocketChannel? -> WebSocketChannel does not have
     // TODO a way to flag for ready/connection states
@@ -90,10 +88,17 @@ class ReconnectingWebSocket {
     _subscription = _channel?.stream.listen(
       _onMessage,
       onError: (error) {
+        _debugPrint('ReconnectingWebSocket onError:$error');
         _onClose();
       },
       onDone: _onClose,
     );
+  }
+
+  void _debugPrint(Object message) {
+    if (debug) {
+      print(message);
+    }
   }
 
   /// Send data on the WebSocket.
@@ -106,12 +111,15 @@ class ReconnectingWebSocket {
       _channel?.sink.add(data);
       return true;
     } catch (ex) {
+      _debugPrint('ReconnectingWebSocket send data error:$ex');
       return false;
     }
   }
 
   /// Closes the web socket connection.
   Future close({bool forceClose = false}) async {
+    _debugPrint(
+        'ReconnectingWebSocket close, force:$forceClose. caller:${StackTrace.current}');
     _shouldReconnect = !forceClose;
     return _channel?.sink.close();
   }
@@ -121,6 +129,7 @@ class ReconnectingWebSocket {
 
   void _onOpen(bool reconnectAttempt) {
     _connected = true;
+    _debugPrint('ReconnectingWebSocket connected');
     _shouldReconnect = true;
     onOpen?.call(reconnectAttempt);
   }
@@ -144,10 +153,7 @@ class ReconnectingWebSocket {
     final duration =
         timeout > maxReconnectInterval ? maxReconnectInterval : timeout;
 
-    if (debug) {
-      print('Reconnecting in: ${duration.inMilliseconds}');
-    }
-
+    _debugPrint('Reconnecting in: ${duration.inMilliseconds}');
     _reconnectSubscription?.cancel();
     _reconnectSubscription =
         Future.delayed(duration).asStream().listen((event) {
@@ -159,6 +165,7 @@ class ReconnectingWebSocket {
   }
 
   void _onMessage(event) {
+    _debugPrint('ReconnectingWebSocket _onMessage, event: $event}');
     _reconnectAttempts = 0;
     onMessage?.call(event);
   }
