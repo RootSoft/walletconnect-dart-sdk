@@ -34,19 +34,17 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
   }
 
   /// Signs method calculates an Ethereum specific signature.
-  /// [address] - 20B address
   /// [message] - message to sign
-  /// [password] - The password of the account to sign data with
+  /// [address] - 20B address
   ///
   /// Returns signature.
   Future<String> personalSign({
     required String message,
     required String address,
-    required String password,
   }) async {
     final result = await connector.sendCustomRequest(
       method: 'personal_sign',
-      params: [address, message, password],
+      params: [message, address],
     );
 
     return result;
