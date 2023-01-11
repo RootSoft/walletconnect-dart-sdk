@@ -42,11 +42,10 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
   Future<String> personalSign({
     required String message,
     required String address,
-    required String password,
   }) async {
     final result = await connector.sendCustomRequest(
       method: 'personal_sign',
-      params: [address, message, password],
+      params: [message, address],
     );
 
     return result;
