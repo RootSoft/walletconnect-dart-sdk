@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:walletconnect_dart/src/utils/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 typedef OnSocketOpen = void Function(bool reconnectAttempt);
@@ -25,8 +26,7 @@ class ReconnectingWebSocket {
   /// The maximum number of reconnection attempts to make. Unlimited if null.
   final int? maxReconnectAttempts;
 
-  /// Whether this instance should log debug messages.
-  final bool debug;
+  final Logger _logger = Logger((ReconnectingWebSocket).toString());
 
   /// The number of attempted reconnects since starting, or the last successful
   /// connection. Read only.
@@ -35,7 +35,7 @@ class ReconnectingWebSocket {
   /// Whether the websocket is currently connected.
   bool _connected = false;
 
-  /// Whether the app should try reconnecting.
+  /// Whether the app is reconnecting.
   bool _reconnecting = false;
 
   /// Whether the app should try to reconnect
@@ -59,7 +59,6 @@ class ReconnectingWebSocket {
     this.maxReconnectInterval = const Duration(milliseconds: 30000),
     this.reconnectDecay = 1.5,
     this.maxReconnectAttempts,
-    this.debug = false,
     this.onOpen,
     this.onClose,
     this.onMessage,
@@ -76,7 +75,7 @@ class ReconnectingWebSocket {
       _reconnectAttempts = 0;
     }
 
-    _debugPrint('ReconnectingWebSocket attempt-connect');
+    _logger.log('open attempt-connect');
 
     // TODO migrate to IOWebSocketChannel? -> WebSocketChannel does not have
     // TODO a way to flag for ready/connection states
@@ -88,38 +87,33 @@ class ReconnectingWebSocket {
     _subscription = _channel?.stream.listen(
       _onMessage,
       onError: (error) {
-        _debugPrint('ReconnectingWebSocket onError:$error');
+        _logger.log('open _subscription onError:$error');
         _onClose();
       },
       onDone: _onClose,
     );
   }
 
-  void _debugPrint(Object message) {
-    if (debug) {
-      print(message);
-    }
-  }
-
   /// Send data on the WebSocket.
   bool send(dynamic data) {
     if (!connected) {
+      _logger.log('send not connected');
       return false;
     }
 
     try {
       _channel?.sink.add(data);
+      _logger.log('send success: $data');
       return true;
     } catch (ex) {
-      _debugPrint('ReconnectingWebSocket send data error:$ex');
+      _logger.log('send error: $ex');
       return false;
     }
   }
 
   /// Closes the web socket connection.
   Future close({bool forceClose = false}) async {
-    _debugPrint(
-        'ReconnectingWebSocket close, force:$forceClose. caller:${StackTrace.current}');
+    _logger.log('close force:$forceClose');
     _shouldReconnect = !forceClose;
     return _channel?.sink.close();
   }
@@ -129,8 +123,9 @@ class ReconnectingWebSocket {
 
   void _onOpen(bool reconnectAttempt) {
     _connected = true;
-    _debugPrint('ReconnectingWebSocket connected');
+    _logger.log('_onOpen connected');
     _shouldReconnect = true;
+    _reconnecting = false;
     onOpen?.call(reconnectAttempt);
   }
 
@@ -138,12 +133,14 @@ class ReconnectingWebSocket {
     onClose?.call();
 
     if (_reconnecting) {
+      _logger.log('_onClose _reconnecting');
       return;
     }
 
     _connected = false;
 
     if (!_shouldReconnect) {
+      _logger.log('_onClose _shouldReconnect= false');
       return;
     }
 
@@ -153,19 +150,19 @@ class ReconnectingWebSocket {
     final duration =
         timeout > maxReconnectInterval ? maxReconnectInterval : timeout;
 
-    _debugPrint('Reconnecting in: ${duration.inMilliseconds}');
+    _logger.log('_onClose Reconnecting in: ${duration.inMilliseconds}');
     _reconnectSubscription?.cancel();
     _reconnectSubscription =
         Future.delayed(duration).asStream().listen((event) {
       _subscription?.cancel();
       _reconnectAttempts++;
-      _reconnecting = false;
+      // _reconnecting = false;
       open(true);
     });
   }
 
   void _onMessage(event) {
-    _debugPrint('ReconnectingWebSocket _onMessage, event: $event}');
+    _logger.log('_onMessage ReconnectingWebSocket _onMessage, event: $event}');
     _reconnectAttempts = 0;
     onMessage?.call(event);
   }

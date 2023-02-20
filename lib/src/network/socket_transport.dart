@@ -5,6 +5,7 @@ import 'package:walletconnect_dart/src/api/websocket/web_socket_message.dart';
 import 'package:walletconnect_dart/src/network/reconnecting_web_socket.dart';
 import 'package:walletconnect_dart/src/utils/event.dart';
 import 'package:walletconnect_dart/src/utils/event_bus.dart';
+import 'package:walletconnect_dart/src/utils/logger.dart';
 
 /// The transport layer used to perform JSON-RPC 2 requests.
 /// A client calls methods on a server and handles the server's responses to
@@ -14,7 +15,7 @@ class SocketTransport {
   final int version;
   final String url;
   final List<String> subscriptions;
-
+  final Logger _logger = Logger((SocketTransport).toString());
   ReconnectingWebSocket? _socket;
 
   final EventBus _eventBus;
@@ -39,7 +40,6 @@ class SocketTransport {
     _socket = ReconnectingWebSocket(
       url: wsUrl,
       maxReconnectAttempts: 5,
-      debug: false,
       onOpen: onOpen,
       onClose: onClose,
       onMessage: _socketReceive,
@@ -105,7 +105,10 @@ class SocketTransport {
     _eventBus
         .on<Event<T>>()
         .where((event) => event.name == eventName)
-        .listen((event) => callback(event.data));
+        .listen((event) {
+          _logger.log("new event: name= ${event.name} data=${event.data}");
+      callback(event.data);
+    });
   }
 
   /// Check if we are currently connected with the socket.

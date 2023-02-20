@@ -14,6 +14,7 @@ import 'package:walletconnect_dart/src/session/session.dart';
 import 'package:walletconnect_dart/src/utils/bridge_utils.dart';
 import 'package:walletconnect_dart/src/utils/event.dart';
 import 'package:walletconnect_dart/src/utils/event_bus.dart';
+import 'package:walletconnect_dart/src/utils/logger.dart';
 
 const ethSigningMethods = [
   'eth_sendTransaction',
@@ -65,15 +66,17 @@ class WalletConnect {
 
   /// Eventbus used for internal events.
   final EventBus _eventBus;
+  final Logger _logger = Logger((WalletConnect).toString());
 
-  WalletConnect._internal({
-    required this.session,
+  WalletConnect._internal({required this.session,
     required this.sessionStorage,
     required this.signingMethods,
     required this.cipherBox,
     required SocketTransport transport,
-  })  : _transport = transport,
+    bool debug = false})
+      : _transport = transport,
         _eventBus = EventBus() {
+    Logger.enabled = debug;
     // Init transport event handling
     _initTransport();
 
@@ -89,8 +92,7 @@ class WalletConnect {
   /// applications to mobile wallets with QR code scanning or deep linking.
   ///
   /// You should provide a bridge, uri or session object.
-  factory WalletConnect({
-    String bridge = '',
+  factory WalletConnect({String bridge = '',
     String uri = '',
     WalletConnectSession? session,
     SessionStorage? sessionStorage,
@@ -98,7 +100,7 @@ class WalletConnect {
     SocketTransport? transport,
     String? clientId,
     PeerMeta? clientMeta,
-  }) {
+    bool debug = false}) {
     if (bridge.isEmpty && uri.isEmpty && session == null) {
       throw WalletConnectException(
         'Missing one of the required parameters: bridge / uri / session',
@@ -136,11 +138,12 @@ class WalletConnect {
         );
 
     return WalletConnect._internal(
-      session: session,
-      sessionStorage: sessionStorage,
-      cipherBox: cipher,
-      signingMethods: [...ethSigningMethods],
-      transport: transport,
+        session: session,
+        sessionStorage: sessionStorage,
+        cipherBox: cipher,
+        signingMethods: [...ethSigningMethods],
+        transport: transport,
+        debug: debug
     );
   }
 
@@ -169,9 +172,9 @@ class WalletConnect {
   }
 
   /// Reconnects to the web socket server.
-  Future<void> reconnect() {
+  Future<void> reconnect() async {
     var completer = Completer<void>();
-    _transport.close(forceClose: true);
+    await _transport.close(forceClose: true);
     _transport.open(
       onOpen: (reconnectAttempt) {
         try {
@@ -222,14 +225,22 @@ class WalletConnect {
     final uri = session.toUri();
     onDisplayUri?.call(uri);
     _eventBus.fire(Event<String>('display_uri', uri));
-
+    _logger.log("display ui");
     // Send the request
-    final response = await _sendRequest(request, topic: session.handshakeTopic);
 
-    // Notify listeners
-    await _handleSessionResponse(response);
-
-    return WCSessionRequestResponse.fromJson(response).status;
+    try {
+      final response = await _sendRequest(
+          request, topic: session.handshakeTopic);
+      _logger.log("response= $response");
+      // Notify listeners
+      await _handleSessionResponse(response);
+    return WCSessionRequestResponse
+        .fromJson(response)
+        .status;
+    } catch (e) {
+      await _handleSessionDisconnect(errorMessage: "$e");
+      rethrow;
+    }
   }
 
   /// Approves the session requested by the peer (dApp), responding with the accounts and client's id and meta.
@@ -324,10 +335,8 @@ class WalletConnect {
       method: 'wc_sessionUpdate',
       params: [params],
     );
-
     // Send the request
     final response = await _sendRequest(request);
-
     // Notify listeners
     await _handleSessionResponse(response);
   }
@@ -433,7 +442,9 @@ class WalletConnect {
   /// Get a new random, payload id.
   int get payloadId {
     var rng = Random();
-    final date = (DateTime.now().millisecondsSinceEpoch * pow(10, 3)).toInt();
+    final date = (DateTime
+        .now()
+        .millisecondsSinceEpoch * pow(10, 3)).toInt();
     final extra = (rng.nextDouble() * pow(10, 3)).floor();
     return date + extra;
   }
@@ -458,6 +469,9 @@ class WalletConnect {
 
   void _handleIncomingMessages(WebSocketMessage message) async {
     final activeTopics = [session.clientId, session.handshakeTopic];
+    _logger.log(
+        "_handleIncomingMessages activeTopics=\n${activeTopics.join(
+            "\n")}\ntopic=\n${message.topic}");
     if (!activeTopics.contains(message.topic)) {
       return;
     }
@@ -478,7 +492,7 @@ class WalletConnect {
 
     // Decode the data
     final data = json.decode(utf8.decode(payload));
-
+    _logger.log("_handleIncomingMessages data=$data");
     // Check if the incoming message is a request
     if (_isJsonRpcRequest(data)) {
       final request = JsonRpcRequest.fromJson(data);
@@ -492,8 +506,7 @@ class WalletConnect {
 
   /// Sends a JSON-RPC-2 compliant request to invoke the given [method].
   /// If no topic is specified, then the session`s peerId is used as topic.
-  Future _sendRequest(
-    JsonRpcRequest request, {
+  Future _sendRequest(JsonRpcRequest request, {
     String? topic,
   }) async {
     final key = session.key;
@@ -511,13 +524,20 @@ class WalletConnect {
     final silent = isSilentPayload(request);
 
     // Send the request
-    _transport.send(
+    bool result = _transport.send(
       payload: payload.toJson(),
       topic: topic ?? session.peerId,
       silent: silent,
     );
+    _logger.log("_sendRequest result= $result");
     var completer = Completer.sync();
+
     _pendingRequests[request.id] = _Request(method, completer, Chain.current());
+    _logger.log("_sendRequest _pendingRequests(${_pendingRequests.length}):");
+    for (var key in _pendingRequests.keys) {
+      _logger.log("_sendRequest $key");
+    }
+
     return completer.future;
   }
 
@@ -569,7 +589,9 @@ class WalletConnect {
   /// Handles a decoded response from the server after batches have been
   /// resolved.
   void _handleSingleResponse(response) {
-    if (!_isResponseValid(response)) return;
+    if (!_isResponseValid(response)) {
+      return;
+    }
     var id = response['id'];
     id = (id is String) ? int.parse(id) : id;
     var request = _pendingRequests.remove(id)!;
