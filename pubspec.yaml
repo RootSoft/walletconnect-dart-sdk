@@ -9,6 +9,9 @@ environment:
   sdk: ">=2.14.0 <3.0.0"
 
 dependencies:
+
+  flutter:
+    sdk: flutter
   # WebSocket Channel
   web_socket_channel: ^2.1.0
 
