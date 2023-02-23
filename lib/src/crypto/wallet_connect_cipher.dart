@@ -6,10 +6,14 @@ import 'package:cryptography/cryptography.dart';
 import 'package:walletconnect_dart/src/crypto/cipher_box.dart';
 import 'package:walletconnect_dart/src/crypto/encrypted_payload.dart';
 import 'package:walletconnect_dart/src/exceptions/wallet_connect_exception.dart';
+import 'package:walletconnect_dart/src/utils/logger.dart';
 
 /// WalletConnect protocol implementation of the encryption/decryption
 /// algorithms
+
 class WalletConnectCipher implements CipherBox {
+  final _logger = Logger((WalletConnectCipher).toString());
+
   /// Encrypt the data with the given key, and an optional nonce.
   @override
   Future<EncryptedPayload> encrypt({
@@ -77,7 +81,8 @@ class WalletConnectCipher implements CipherBox {
     final hmacsha256 = Hmac.sha256();
     final secretKey = SecretKey(List<int>.unmodifiable(key));
     final chmac = await hmacsha256.calculateMac(unsigned, secretKey: secretKey);
-
+    _logger.log(
+        "hex.encode(chmac.bytes)=${hex.encode(chmac.bytes)}\npayload.hmac=${payload.hmac}");
     return hex.encode(chmac.bytes) == payload.hmac;
   }
 
