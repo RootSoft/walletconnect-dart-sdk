@@ -103,7 +103,7 @@ class ReconnectingWebSocket {
 
     try {
       _channel?.sink.add(data);
-      _logger.log('send success: $data');
+      _logger.log('send success');
       return true;
     } catch (ex) {
       _logger.log('send error: $ex');
@@ -162,7 +162,6 @@ class ReconnectingWebSocket {
   }
 
   void _onMessage(event) {
-    _logger.log('_onMessage ReconnectingWebSocket _onMessage, event: $event}');
     _reconnectAttempts = 0;
     onMessage?.call(event);
   }

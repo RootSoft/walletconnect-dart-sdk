@@ -46,7 +46,10 @@ class EthereumWalletConnectProvider extends WalletConnectProvider {
   }) async {
     final result = await connector.sendCustomRequest(
       method: 'personal_sign',
-      params: [address, message, password],
+      // params: [address, message, password],
+      // according to https://docs.walletconnect.com/2.0/advanced/rpc-reference/ethereum-rpc#personal_sign
+      // correct order should be [message, address, password]!!!
+      params: [message, address, password],
     );
 
     return result;

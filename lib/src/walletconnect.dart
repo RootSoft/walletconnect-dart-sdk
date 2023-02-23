@@ -68,12 +68,13 @@ class WalletConnect {
   final EventBus _eventBus;
   final Logger _logger = Logger((WalletConnect).toString());
 
-  WalletConnect._internal({required this.session,
-    required this.sessionStorage,
-    required this.signingMethods,
-    required this.cipherBox,
-    required SocketTransport transport,
-    bool debug = false})
+  WalletConnect._internal(
+      {required this.session,
+      required this.sessionStorage,
+      required this.signingMethods,
+      required this.cipherBox,
+      required SocketTransport transport,
+      bool debug = false})
       : _transport = transport,
         _eventBus = EventBus() {
     Logger.enabled = debug;
@@ -92,15 +93,16 @@ class WalletConnect {
   /// applications to mobile wallets with QR code scanning or deep linking.
   ///
   /// You should provide a bridge, uri or session object.
-  factory WalletConnect({String bridge = '',
-    String uri = '',
-    WalletConnectSession? session,
-    SessionStorage? sessionStorage,
-    CipherBox? cipher,
-    SocketTransport? transport,
-    String? clientId,
-    PeerMeta? clientMeta,
-    bool debug = false}) {
+  factory WalletConnect(
+      {String bridge = '',
+      String uri = '',
+      WalletConnectSession? session,
+      SessionStorage? sessionStorage,
+      CipherBox? cipher,
+      SocketTransport? transport,
+      String? clientId,
+      PeerMeta? clientMeta,
+      bool debug = false}) {
     if (bridge.isEmpty && uri.isEmpty && session == null) {
       throw WalletConnectException(
         'Missing one of the required parameters: bridge / uri / session',
@@ -143,8 +145,7 @@ class WalletConnect {
         cipherBox: cipher,
         signingMethods: [...ethSigningMethods],
         transport: transport,
-        debug: debug
-    );
+        debug: debug);
   }
 
   /// Registers event subscriptions.
@@ -229,14 +230,12 @@ class WalletConnect {
     // Send the request
 
     try {
-      final response = await _sendRequest(
-          request, topic: session.handshakeTopic);
+      final response =
+          await _sendRequest(request, topic: session.handshakeTopic);
       _logger.log("response= $response");
       // Notify listeners
       await _handleSessionResponse(response);
-    return WCSessionRequestResponse
-        .fromJson(response)
-        .status;
+      return WCSessionRequestResponse.fromJson(response).status;
     } catch (e) {
       await _handleSessionDisconnect(errorMessage: "$e");
       rethrow;
@@ -442,9 +441,7 @@ class WalletConnect {
   /// Get a new random, payload id.
   int get payloadId {
     var rng = Random();
-    final date = (DateTime
-        .now()
-        .millisecondsSinceEpoch * pow(10, 3)).toInt();
+    final date = (DateTime.now().millisecondsSinceEpoch * pow(10, 3)).toInt();
     final extra = (rng.nextDouble() * pow(10, 3)).floor();
     return date + extra;
   }
@@ -470,9 +467,10 @@ class WalletConnect {
   void _handleIncomingMessages(WebSocketMessage message) async {
     final activeTopics = [session.clientId, session.handshakeTopic];
     _logger.log(
-        "_handleIncomingMessages activeTopics=\n${activeTopics.join(
-            "\n")}\ntopic=\n${message.topic}");
+        "_handleIncomingMessages activeTopics=\n${activeTopics.join("\n")}\ntopic=\n${message.topic}");
     if (!activeTopics.contains(message.topic)) {
+      _logger.log(
+          "_handleIncomingMessages topic \"${message.topic}\" is not in active topic list");
       return;
     }
 
@@ -506,13 +504,15 @@ class WalletConnect {
 
   /// Sends a JSON-RPC-2 compliant request to invoke the given [method].
   /// If no topic is specified, then the session`s peerId is used as topic.
-  Future _sendRequest(JsonRpcRequest request, {
+  Future _sendRequest(
+    JsonRpcRequest request, {
     String? topic,
   }) async {
     final key = session.key;
     if (key == null) {
       return;
     }
+    _logger.log("_sendRequest request.params= ${request.params}");
 
     final data = json.encode(request.toJson());
     final payload = await cipherBox.encrypt(
@@ -523,13 +523,6 @@ class WalletConnect {
     final method = request.method;
     final silent = isSilentPayload(request);
 
-    // Send the request
-    bool result = _transport.send(
-      payload: payload.toJson(),
-      topic: topic ?? session.peerId,
-      silent: silent,
-    );
-    _logger.log("_sendRequest result= $result");
     var completer = Completer.sync();
 
     _pendingRequests[request.id] = _Request(method, completer, Chain.current());
@@ -537,7 +530,13 @@ class WalletConnect {
     for (var key in _pendingRequests.keys) {
       _logger.log("_sendRequest $key");
     }
-
+    // Send the request
+    bool result = _transport.send(
+      payload: payload.toJson(),
+      topic: topic ?? session.peerId,
+      silent: silent,
+    );
+    _logger.log("_sendRequest result= $result");
     return completer.future;
   }
 
@@ -590,6 +589,7 @@ class WalletConnect {
   /// resolved.
   void _handleSingleResponse(response) {
     if (!_isResponseValid(response)) {
+      _logger.log("invalid response: ${response}");
       return;
     }
     var id = response['id'];
@@ -612,8 +612,8 @@ class WalletConnect {
   bool _isJsonRpcRequest(response) {
     if (response is! Map) return false;
     if (response['jsonrpc'] != '2.0') return false;
-    var id = response['id'];
-    id = (id is String) ? int.parse(id) : id;
+    // var id = response['id'];
+    // id = (id is String) ? int.parse(id) : id;
     return response.containsKey('method');
   }
 

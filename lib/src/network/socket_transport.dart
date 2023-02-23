@@ -36,7 +36,7 @@ class SocketTransport {
       protocol: protocol,
       version: version.toString(),
     );
-
+    _logger.log("open url=$wsUrl");
     _socket = ReconnectingWebSocket(
       url: wsUrl,
       maxReconnectAttempts: 5,
@@ -106,7 +106,6 @@ class SocketTransport {
         .on<Event<T>>()
         .where((event) => event.name == eventName)
         .listen((event) {
-          _logger.log("new event: name= ${event.name} data=${event.data}");
       callback(event.data);
     });
   }
