@@ -483,10 +483,17 @@ class WalletConnect {
     final encryptedPayload = EncryptedPayload.fromJson(
       json.decode(message.payload),
     );
-    final payload = await cipherBox.decrypt(
-      payload: encryptedPayload,
-      key: key,
-    );
+    Uint8List payload;
+    try {
+      payload = await cipherBox.decrypt(
+        payload: encryptedPayload,
+        key: key,
+      );
+    } on WalletConnectException catch (e) {
+      //invalid hmac error, often occurs on switching chains. ignore it
+      _logger.log("_handleIncomingMessages error=$e");
+      return;
+    }
 
     // Decode the data
     final data = json.decode(utf8.decode(payload));
