@@ -80,7 +80,16 @@ class ReconnectingWebSocket {
     // TODO migrate to IOWebSocketChannel? -> WebSocketChannel does not have
     // TODO a way to flag for ready/connection states
     // https://github.com/dart-lang/web_socket_channel/issues/25
-    _channel = WebSocketChannel.connect(Uri.parse(url));
+
+    try {
+      // Sometimes this exception will be thrown:
+
+      // The following SocketException was thrown:
+      // Failed host lookup: 'l.bridge.walletconnect.org' (OS Error: No address associated with hostname, errno = 7)
+      _channel = WebSocketChannel.connect(Uri.parse(url));
+    } catch (e) {
+      _logger.log(e);
+    }
     _onOpen(reconnectAttempt);
 
     // Listen for messages
@@ -156,7 +165,6 @@ class ReconnectingWebSocket {
         Future.delayed(duration).asStream().listen((event) {
       _subscription?.cancel();
       _reconnectAttempts++;
-      // _reconnecting = false;
       open(true);
     });
   }

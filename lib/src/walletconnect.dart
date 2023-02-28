@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:pretty_json/pretty_json.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:uuid/uuid.dart';
 import 'package:walletconnect_dart/src/api/api.dart';
@@ -483,10 +484,17 @@ class WalletConnect {
     final encryptedPayload = EncryptedPayload.fromJson(
       json.decode(message.payload),
     );
-    final payload = await cipherBox.decrypt(
-      payload: encryptedPayload,
-      key: key,
-    );
+    Uint8List payload;
+    try {
+      payload = await cipherBox.decrypt(
+        payload: encryptedPayload,
+        key: key,
+      );
+    } on WalletConnectException catch (e) {
+      //invalid hmac error, often occurs on switching chains. ignore it
+      _logger.log("_handleIncomingMessages error=$e");
+      return;
+    }
 
     // Decode the data
     final data = json.decode(utf8.decode(payload));
